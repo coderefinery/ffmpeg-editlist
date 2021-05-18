@@ -14,14 +14,14 @@ import subprocess
 
 FFMPEG_COPY = ['-vcodec', 'copy', '-acodec', 'copy',]
 FFMPEG_ENCODE = ['-c:v', 'libx264',
-                 '-preset', 'slow', '-crf', '22',
+                 #'-preset', 'slow', '-crf', '22',
                  '-c:a', 'copy',
                  ]
 # x is horizontal, y is vertical, from top left
 FFMPEG_COVER = \
     "drawbox=enable='between(t,{begin},{end}):w={w}:h={h}:x={x}:y={y}:t=fill:c=black"
 
-def cover(begin, end, w=0, h=0, x=0, y=0):
+def generate_cover(begin, end, w=0, h=0, x=0, y=0):
     begin = seconds(begin)
     end = seconds(end)
     return FFMPEG_COVER.format(**locals())
@@ -73,6 +73,14 @@ def test_humantime():
     assert humantime(7350) == "2:02:30"
     assert humantime(43950) == "12:12:30"
 
+def map_time(lookup_table, time):
+    """Map a time from source time to output time
+    """
+    time_lookup_vals = [x[0] for x in lookup_table]
+    i = bisect.bisect_right(time_lookup_vals, time)
+    return time - lookup_table[i-1][0] + lookup_table[i-1][1]
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('editlist')
@@ -86,11 +94,23 @@ if __name__ == '__main__':
                         help='Limit to only these outputs')
     parser.add_argument('--reencode', action='store_true',
                         help='Re-encode the video')
+    parser.add_argument('--threads', type=int,
+                        help='Number of encoding threads')
     parser.add_argument('--force', '-f', action='store_true',
                         help='Overwrite existing files')
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Verbose (put ffmpeg in normal mode)')
+    parser.add_argument('--preset', default='slow',
+                        help='')
+    parser.add_argument('--crf', default=22, type=int,
+                        help='')
     args = parser.parse_args()
+
+    if args.threads:
+        FFMPEG_ENCODE.extend(['-threads', str(args.threads)])
+    FFMPEG_ENCODE.extend(['-preset', args.preset])
+    FFMPEG_ENCODE.extend(['-crf', str(args.crf)])
+
 
     data = yaml.safe_load(open(args.editlist))
     PWD = Path(os.getcwd())
@@ -100,11 +120,11 @@ if __name__ == '__main__':
 
     input0 = args.input
     for segment in data:
-        print(segment)
+        #print(segment)
 
         tmp_outputs = [ ]
         TOC = [ ]
-        time_lookups = [ ]
+        segment_list = [ ]
         cumulative_time = 0
         filters = [ ]
 
@@ -117,23 +137,32 @@ if __name__ == '__main__':
             # Exclude non-matching files if '--limit' specified.
             if args.limit and args.limit not in segment['output']:
                 continue
-            for i, time in enumerate(segment['time']):
+            for i, command in enumerate(segment['time']):
                 input1 = input0
 
                 # Is this a TOC entry?
                 # If it's a dict, it is a table of contents entry that will be
                 # mapped to the correct time in the procesed video.
-                if isinstance(time, dict) and 'cover' in time:
-                    filters.append(cover(**time['cover']))
+                if isinstance(command, dict) and 'cover' in command:
+                    cover = command['cover']
+                    #def filter_(segment_list, cover=cover):
+                    #    cover['begin'] = seconds(cover['begin']) - segment_list[-1][0]
+                    #    cover['end']   = seconds(cover['end'])   - segment_list[-1][0]
+                    #    return generate_cover(**cover)
+                    #print("Covering at %s"%humantime(map_time(segment_list, seconds(cover['begin']))))
+                    filters.append(generate_cover(**cover))
                     continue
-                if isinstance(time, dict):
-                    ( (start, title), ) = list(time.items())
-                    print(start, title)
-                    print('TOC', start, title, segment)
+                # This is a TOC entry
+                if isinstance(command, dict):
+                    ( (start, title), ) = list(command.items())
+                    #print(start, title)
+                    #print('TOC', start, title, segment)
                     TOC.append((seconds(start), title))
                     continue
 
+                # This is a regular time segment command
                 # time can be string with comma or list
+                time = command
                 if isinstance(time, str):
                     time = time.split(',')
                 if len(time) == 2:
@@ -148,8 +177,8 @@ if __name__ == '__main__':
                 if not os.path.exists(input1):
                     input1 = args.input / input1
 
-                time_lookups.append([seconds(start), cumulative_time])
-                time_lookups.append([seconds(stop), None])
+                segment_list.append([seconds(start), cumulative_time])
+                segment_list.append([seconds(stop), None])
                 cumulative_time += seconds(stop) - seconds(start)
                 # filters
                 if filters:
@@ -165,6 +194,7 @@ if __name__ == '__main__':
                        ]
                 print(cmd)
                 subprocess.check_call(cmd)
+                filters = [ ]
 
             # Create the playlist of inputs
             playlist = Path(tmpdir) / 'playlist.txt'
@@ -178,6 +208,7 @@ if __name__ == '__main__':
                    #*itertools.chain.from_iterable(('-i', x) for x in tmp_outputs),
                    #'-i', 'concat:'+'|'.join(tmp_outputs),
                    '-safe', '0', '-f', 'concat', '-i', playlist,
+                   '-fflags', '+igndts',
                    '-c', 'copy',
                    *(['-y'] if args.force else []),
                    output,
@@ -187,14 +218,15 @@ if __name__ == '__main__':
 
             # Print table of contents
             import pprint
-            pprint.pprint(time_lookups)
+            pprint.pprint(segment_list)
             pprint.pprint(TOC)
-            time_lookup_vals = [x[0] for x in time_lookups]
-            toc_file = open(output+'.toc.txt', 'w')
+
+
+            toc_file = open(str(output)+'.toc.txt', 'w')
             for time, name in TOC:
-                i = bisect.bisect_right(time_lookup_vals, time)
-                print(humantime(time - time_lookups[i-1][0] + time_lookups[i-1][1]), name)
-                print(humantime(time - time_lookups[i-1][0] + time_lookups[i-1][1]), name,
+                new_time = map_time(segment_list, time)
+                print(humantime(new_time), name)
+                print(humantime(new_time), name,
                       file=toc_file)
 
             if args.wait:
