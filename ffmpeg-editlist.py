@@ -17,7 +17,14 @@ FFMPEG_ENCODE = ['-c:v', 'libx264',
                  '-preset', 'slow', '-crf', '22',
                  '-c:a', 'copy',
                  ]
+# x is horizontal, y is vertical, from top left
+FFMPEG_COVER = \
+    "drawbox=enable='between(t,{begin},{end}):w={w}:h={h}:x={x}:y={y}:t=fill:c=black"
 
+def cover(begin, end, w=0, h=0, x=0, y=0):
+    begin = seconds(begin)
+    end = seconds(end)
+    return FFMPEG_COVER.format(**locals())
 
 
 def is_time(x):
@@ -99,6 +106,7 @@ if __name__ == '__main__':
         TOC = [ ]
         time_lookups = [ ]
         cumulative_time = 0
+        filters = [ ]
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Find input
@@ -115,6 +123,9 @@ if __name__ == '__main__':
                 # Is this a TOC entry?
                 # If it's a dict, it is a table of contents entry that will be
                 # mapped to the correct time in the procesed video.
+                if isinstance(time, dict) and 'cover' in time:
+                    filters.append(cover(**time['cover']))
+                    continue
                 if isinstance(time, dict):
                     ( (start, title), ) = list(time.items())
                     print(start, title)
@@ -140,12 +151,16 @@ if __name__ == '__main__':
                 time_lookups.append([seconds(start), cumulative_time])
                 time_lookups.append([seconds(stop), None])
                 cumulative_time += seconds(stop) - seconds(start)
+                # filters
+                if filters:
+                    filters = ['-vf', ','.join(filters)]
 
                 tmp_out = str(Path(tmpdir)/('tmpout-%02d.mp4'%i))
                 tmp_outputs.append(tmp_out)
                 cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
                        '-i', input1, '-ss', start, '-to', stop,
-                       *(FFMPEG_ENCODE if args.reencode else FFMPEG_COPY),
+                       *(FFMPEG_ENCODE if args.reencode or filters else FFMPEG_COPY),
+                       *filters,
                        tmp_out,
                        ]
                 print(cmd)
