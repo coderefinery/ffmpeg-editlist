@@ -75,6 +75,8 @@ if __name__ == '__main__':
                         help='Wait after each encoding')
     parser.add_argument('--output', '-o', default='.', type=Path,
                         help='Output directory')
+    parser.add_argument('-limit', '-l',
+                        help='Limit to only these outputs')
     parser.add_argument('--reencode', action='store_true',
                         help='Re-encode the video')
     parser.add_argument('--force', '-f', action='store_true',
@@ -103,6 +105,9 @@ if __name__ == '__main__':
             if 'input' in segment:
                 input0 = segment['input']
             if 'output' not in segment:
+                continue
+            # Exclude non-matching files if '--limit' specified.
+            if args.limit and args.limit not in segment['output']:
                 continue
             for i, time in enumerate(segment['time']):
                 input1 = input0
