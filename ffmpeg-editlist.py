@@ -173,13 +173,14 @@ if __name__ == '__main__':
                     playlist_f.write('file '+str(file_)+'\n')
             print(open(playlist).read())
             # Re-encode
+            output = args.output / segment['output']
             cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
                    #*itertools.chain.from_iterable(('-i', x) for x in tmp_outputs),
                    #'-i', 'concat:'+'|'.join(tmp_outputs),
                    '-safe', '0', '-f', 'concat', '-i', playlist,
                    '-c', 'copy',
                    *(['-y'] if args.force else []),
-                   args.output / segment['output'],
+                   output,
                    ]
             print(cmd)
             subprocess.check_call(cmd)
@@ -189,9 +190,12 @@ if __name__ == '__main__':
             pprint.pprint(time_lookups)
             pprint.pprint(TOC)
             time_lookup_vals = [x[0] for x in time_lookups]
+            toc_file = open(output+'.toc.txt', 'w')
             for time, name in TOC:
                 i = bisect.bisect_right(time_lookup_vals, time)
                 print(humantime(time - time_lookups[i-1][0] + time_lookups[i-1][1]), name)
+                print(humantime(time - time_lookups[i-1][0] + time_lookups[i-1][1]), name,
+                      file=toc_file)
 
             if args.wait:
                 input('press return to continue> ')
