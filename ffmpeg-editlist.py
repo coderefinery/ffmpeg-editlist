@@ -124,7 +124,16 @@ if __name__ == '__main__':
     FFMPEG_ENCODE.extend(['-crf', str(args.crf)])
 
 
-    data = yaml.safe_load(open(args.editlist))
+    # Open the input file.  Parse out of markdown if it is markdown:
+    data = open(args.editlist).read()
+    if '```' in data:
+        matches = re.findall(r'`{3,}[^\n]*\n(.*?)\n`{3,}', data, re.MULTILINE|re.DOTALL)
+        print(matches)
+        data = '\n'.join([m for m in matches])
+        print(data)
+    data = yaml.safe_load(data)
+
+
     PWD = Path(os.getcwd())
     LOGLEVEL = 31
     if args.verbose:
