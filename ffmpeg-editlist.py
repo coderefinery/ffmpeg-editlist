@@ -159,34 +159,49 @@ if __name__ == '__main__':
             # Exclude non-matching files if '--limit' specified.
             if args.limit and args.limit not in segment['output']:
                 continue
+            input1 = input0
             for i, command in enumerate(segment['time']):
-                input1 = input0
 
-                # Is this a TOC entry?
-                # If it's a dict, it is a table of contents entry that will be
-                # mapped to the correct time in the procesed video.
+                # Is this a command to cover a part of the video?
                 if isinstance(command, dict) and 'cover' in command:
                     cover = command['cover']
                     covers.append(seconds(cover['begin']))
                     filters.append(generate_cover(**cover))
                     continue
+                # Is this a TOC entry?
+                # If it's a dict, it is a table of contents entry that will be
+                # mapped to the correct time in the procesed video.
                 # This is a TOC entry
-                if isinstance(command, dict):
+                elif isinstance(command, dict):
                     ( (start, title), ) = list(command.items())
                     #print(start, title)
                     #print('TOC', start, title, segment)
                     TOC.append((seconds(start), title))
                     continue
+                # Input command: change input files
+                elif isinstance(command, dict) and 'input' in command:
+                    input1 = command['input']
+                    continue
+                # Start command: start a segment
+                elif isinstance(command, dict) and 'start' in command:
+                    start = command['start']
+                    continue
+                # End command: process this segment and all queued commands
+                elif isinstance(command, dict) and 'end' in command:
+                    stop = command['end']
+                    # Continue below to process this segment
 
-                # This is a regular time segment command
-                # time can be string with comma or list
-                time = command
-                if isinstance(time, str):
-                    time = time.split(',')
-                if len(time) == 2:
-                    start, stop = time
-                elif len(time) == 3:
-                    input1, start, stop = time
+
+                # A time segment in the format 'start, stop'
+                else:
+                    # time can be string with comma or list
+                    time = command
+                    if isinstance(time, str):
+                        time = time.split(',')
+                    if len(time) == 2:
+                        start, stop = time
+                    elif len(time) == 3:
+                        input1, start, stop = time
                 start = str(start).strip()
                 stop = str(stop).strip()
 
@@ -245,6 +260,7 @@ if __name__ == '__main__':
 
             if not args.check:
                 toc_file = open(str(output)+'.toc.txt', 'w')
+            # Print out the table of contents
             for time, name in TOC:
                 LOG.debug(f"TOC entry: {time} {name}")
                 new_time = map_time(segment_list, time)
