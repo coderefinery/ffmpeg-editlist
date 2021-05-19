@@ -8,6 +8,7 @@ from math import floor
 from pathlib import Path
 import os
 import re
+import shlex
 import tempfile
 import yaml
 import subprocess
@@ -85,6 +86,9 @@ def map_time(lookup_table, time):
         LOG.error("%s", lookup_table)
         LOG.error("Bad time lookup at %d, %s", i, lookup_table[i-1])
     return time - lookup_table[i-1][0] + lookup_table[i-1][1]
+
+def shell_join(x):
+    return ' '.join(shlex.quote(str(_)) for _ in x)
 
 
 if __name__ == '__main__':
@@ -200,7 +204,7 @@ if __name__ == '__main__':
                        *filters,
                        tmp_out,
                        ]
-                LOG.info(cmd)
+                LOG.info(shell_join(cmd))
                 if not args.check:
                     subprocess.check_call(cmd)
                 filters = [ ]
@@ -223,7 +227,7 @@ if __name__ == '__main__':
                    *(['-y'] if args.force else []),
                    output,
                    ]
-            LOG.info(cmd)
+            LOG.info(shell_join(cmd))
             if not args.check:
                 subprocess.check_call(cmd)
 
