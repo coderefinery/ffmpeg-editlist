@@ -139,6 +139,7 @@ if __name__ == '__main__':
         segment_list = [ ]
         cumulative_time = 0
         filters = [ ]
+        covers = [ ]
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Find input
@@ -157,11 +158,7 @@ if __name__ == '__main__':
                 # mapped to the correct time in the procesed video.
                 if isinstance(command, dict) and 'cover' in command:
                     cover = command['cover']
-                    #def filter_(segment_list, cover=cover):
-                    #    cover['begin'] = seconds(cover['begin']) - segment_list[-1][0]
-                    #    cover['end']   = seconds(cover['end'])   - segment_list[-1][0]
-                    #    return generate_cover(**cover)
-                    #print("Covering at %s"%humantime(map_time(segment_list, seconds(cover['begin']))))
+                    covers.append(seconds(cover['begin']))
                     filters.append(generate_cover(**cover))
                     continue
                 # This is a TOC entry
@@ -246,6 +243,11 @@ if __name__ == '__main__':
                 if not args.check:
                     print(humantime(new_time), name,
                         file=toc_file)
+
+            # Print out covered segments
+            for time in covers:
+                new_time = map_time(segment_list, time)
+                LOG.info("Check cover at %s", humantime(new_time))
 
             if args.wait:
                 input('press return to continue> ')
