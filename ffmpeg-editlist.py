@@ -3,6 +3,7 @@
 import argparse
 import bisect
 import itertools
+import logging
 from math import floor
 from pathlib import Path
 import os
@@ -11,6 +12,8 @@ import tempfile
 import yaml
 import subprocess
 
+LOG = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 FFMPEG_COPY = ['-vcodec', 'copy', '-acodec', 'copy',]
 FFMPEG_ENCODE = ['-c:v', 'libx264',
@@ -78,6 +81,9 @@ def map_time(lookup_table, time):
     """
     time_lookup_vals = [x[0] for x in lookup_table]
     i = bisect.bisect_right(time_lookup_vals, time)
+    if lookup_table[i-1][1] is None:
+        LOG.error("%s", lookup_table)
+        LOG.error("Bad time lookup at %d, %s", i, lookup_table[i-1])
     return time - lookup_table[i-1][0] + lookup_table[i-1][1]
 
 
@@ -96,6 +102,8 @@ if __name__ == '__main__':
                         help='Re-encode the video')
     parser.add_argument('--threads', type=int,
                         help='Number of encoding threads')
+    parser.add_argument('--check', '-c', action='store_true',
+                        help="Don't encode, just check consistency")
     parser.add_argument('--force', '-f', action='store_true',
                         help='Overwrite existing files')
     parser.add_argument('--verbose', '-v', action='store_true',
@@ -192,8 +200,9 @@ if __name__ == '__main__':
                        *filters,
                        tmp_out,
                        ]
-                print(cmd)
-                subprocess.check_call(cmd)
+                LOG.info(cmd)
+                if not args.check:
+                    subprocess.check_call(cmd)
                 filters = [ ]
 
             # Create the playlist of inputs
@@ -201,7 +210,8 @@ if __name__ == '__main__':
             with open(playlist, 'w') as playlist_f:
                 for file_ in tmp_outputs:
                     playlist_f.write('file '+str(file_)+'\n')
-            print(open(playlist).read())
+            LOG.debug("Playlist:")
+            LOG.debug(open(playlist).read())
             # Re-encode
             output = args.output / segment['output']
             cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
@@ -213,21 +223,25 @@ if __name__ == '__main__':
                    *(['-y'] if args.force else []),
                    output,
                    ]
-            print(cmd)
-            subprocess.check_call(cmd)
+            LOG.info(cmd)
+            if not args.check:
+                subprocess.check_call(cmd)
 
             # Print table of contents
             import pprint
-            pprint.pprint(segment_list)
-            pprint.pprint(TOC)
+            LOG.debug(pprint.pformat(segment_list))
+            LOG.debug(pprint.pformat(TOC))
 
 
-            toc_file = open(str(output)+'.toc.txt', 'w')
+            if not args.check:
+                toc_file = open(str(output)+'.toc.txt', 'w')
             for time, name in TOC:
+                LOG.debug(f"TOC entry: {time} {name}")
                 new_time = map_time(segment_list, time)
                 print(humantime(new_time), name)
-                print(humantime(new_time), name,
-                      file=toc_file)
+                if not args.check:
+                    print(humantime(new_time), name,
+                        file=toc_file)
 
             if args.wait:
                 input('press return to continue> ')
