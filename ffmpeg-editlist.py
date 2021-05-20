@@ -100,7 +100,7 @@ if __name__ == '__main__':
                         help='Wait after each encoding')
     parser.add_argument('--output', '-o', default='.', type=Path,
                         help='Output directory')
-    parser.add_argument('-limit', '-l',
+    parser.add_argument('-limit', '-l', action='append',
                         help='Limit to only these outputs')
     parser.add_argument('--reencode', action='store_true',
                         help='Re-encode the video')
@@ -128,9 +128,9 @@ if __name__ == '__main__':
     data = open(args.editlist).read()
     if '```' in data:
         matches = re.findall(r'`{3,}[^\n]*\n(.*?)\n`{3,}', data, re.MULTILINE|re.DOTALL)
-        print(matches)
+        #print(matches)
         data = '\n'.join([m for m in matches])
-        print(data)
+        #print(data)
     data = yaml.safe_load(data)
 
 
@@ -157,7 +157,7 @@ if __name__ == '__main__':
             if 'output' not in segment:
                 continue
             # Exclude non-matching files if '--limit' specified.
-            if args.limit and args.limit not in segment['output']:
+            if args.limit and not any(limit_match in segment['output'] for limit_match in args.limit):
                 continue
             input1 = input0
             for i, command in enumerate(segment['time']):
