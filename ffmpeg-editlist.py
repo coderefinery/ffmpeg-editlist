@@ -168,16 +168,6 @@ if __name__ == '__main__':
                     covers.append(seconds(cover['begin']))
                     filters.append(generate_cover(**cover))
                     continue
-                # Is this a TOC entry?
-                # If it's a dict, it is a table of contents entry that will be
-                # mapped to the correct time in the procesed video.
-                # This is a TOC entry
-                elif isinstance(command, dict):
-                    ( (start, title), ) = list(command.items())
-                    #print(start, title)
-                    #print('TOC', start, title, segment)
-                    TOC.append((seconds(start), title))
-                    continue
                 # Input command: change input files
                 elif isinstance(command, dict) and 'input' in command:
                     input1 = command['input']
@@ -190,6 +180,16 @@ if __name__ == '__main__':
                 elif isinstance(command, dict) and 'end' in command:
                     stop = command['end']
                     # Continue below to process this segment
+                # Is this a TOC entry?
+                # If it's a dict, it is a table of contents entry that will be
+                # mapped to the correct time in the procesed video.
+                # This is a TOC entry
+                elif isinstance(command, dict):
+                    ( (start, title), ) = list(command.items())
+                    #print(start, title)
+                    #print('TOC', start, title, segment)
+                    TOC.append((seconds(start), title))
+                    continue
 
 
                 # A time segment in the format 'start, stop'
