@@ -138,6 +138,7 @@ if __name__ == '__main__':
     LOGLEVEL = 31
     if args.verbose:
         LOGLEVEL = 40
+    workshop_description = None
 
     input0 = args.input
     for segment in data:
@@ -154,6 +155,8 @@ if __name__ == '__main__':
             # Find input
             if 'input' in segment:
                 input0 = segment['input']
+            if 'workshop_description' in segment:
+                workshop_description = segment['workshop_description']
             if 'output' not in segment:
                 continue
             # Exclude non-matching files if '--limit' specified.
@@ -185,10 +188,10 @@ if __name__ == '__main__':
                 # mapped to the correct time in the procesed video.
                 # This is a TOC entry
                 elif isinstance(command, dict):
-                    ( (start, title), ) = list(command.items())
+                    ( (time, title), ) = list(command.items())
                     #print(start, title)
                     #print('TOC', start, title, segment)
-                    TOC.append((seconds(start), title))
+                    TOC.append((seconds(time), title))
                     continue
 
 
@@ -258,16 +261,23 @@ if __name__ == '__main__':
             LOG.debug(pprint.pformat(TOC))
 
 
-            if not args.check:
-                toc_file = open(str(output)+'.toc.txt', 'w')
+            video_description = [ ]
+            if 'title' in segment:
+                video_description.extend([segment['title'], '\n'])
+            if 'description' in segment:
+                video_description.extend([segment['description'].replace('\n', '\n\n')])
             # Print out the table of contents
             for time, name in TOC:
-                LOG.debug(f"TOC entry: {time} {name}")
+                LOG.debug("TOC entry %s %s", time, name)
                 new_time = map_time(segment_list, time)
                 print(humantime(new_time), name)
-                if not args.check:
-                    print(humantime(new_time), name,
-                        file=toc_file)
+                video_description.append(f"{humantime(new_time)} {name}")
+
+            if workshop_description:
+                video_description.extend(['\n\n', workshop_description, '\n'])
+
+            with open(str(output)+'.info.txt', 'w') as toc_file:
+                toc_file.write('\n'.join(video_description))
 
             # Print out covered segments
             for time in covers:
