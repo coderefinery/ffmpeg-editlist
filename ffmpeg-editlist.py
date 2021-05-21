@@ -96,26 +96,28 @@ if __name__ == '__main__':
     parser.add_argument('editlist')
     parser.add_argument('input', type=Path,
                         help="Input file or directory of files.")
-    parser.add_argument('--wait', action='store_true',
-                        help='Wait after each encoding')
     parser.add_argument('--output', '-o', default='.', type=Path,
                         help='Output directory')
+
     parser.add_argument('-limit', '-l', action='append',
-                        help='Limit to only these outputs')
-    parser.add_argument('--reencode', action='store_true',
-                        help='Re-encode the video')
-    parser.add_argument('--threads', type=int,
-                        help='Number of encoding threads')
+                        help='Limit to only outputs matching this pattern.  There is no wildcarding.  This option can be given multiple times.')
     parser.add_argument('--check', '-c', action='store_true',
-                        help="Don't encode, just check consistency")
+                        help="Don't encode or generate output files, just check consistency of the YAML file.  This *will* override the .info.txt output file.")
     parser.add_argument('--force', '-f', action='store_true',
-                        help='Overwrite existing files')
+                        help='Overwrite existing output files without prompting')
     parser.add_argument('--verbose', '-v', action='store_true',
-                        help='Verbose (put ffmpeg in normal mode)')
-    parser.add_argument('--preset', default='slow',
-                        help='')
+                        help='Verbose (put ffmpeg in normal mode, otherwise ffmpeg is quiet.)')
+
+    parser.add_argument('--reencode', action='store_true',
+                        help='Re-encode all segments of the video.  See --preset and --crf to adjust parameters')
+    parser.add_argument('--preset', default='veryslow',
+                        help='x264 preset to use for re-encoding.  Default is veryslow')
     parser.add_argument('--crf', default=22, type=int,
-                        help='')
+                        help='x264 crf to use for re-encoding.  Default is 22, reasonable options are 20 (pretty good) or higher.')
+    parser.add_argument('--threads', type=int,
+                        help='Number of encoding threads.  Default: unset, autodetect')
+    parser.add_argument('--wait', action='store_true',
+                        help='Wait after each encoding (don\'t clean up the temporary directory right away')
     args = parser.parse_args()
 
     if args.threads:
