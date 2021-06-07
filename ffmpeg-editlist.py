@@ -191,6 +191,8 @@ if __name__ == '__main__':
                 # This is a TOC entry
                 elif isinstance(command, dict):
                     ( (time, title), ) = list(command.items())
+                    if time == '-':
+                        time = start
                     #print(start, title)
                     #print('TOC', start, title, segment)
                     TOC.append((seconds(time), title))
