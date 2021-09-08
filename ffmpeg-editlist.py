@@ -107,7 +107,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', '-o', default='.', type=Path,
                         help='Output directory')
 
-    parser.add_argument('-limit', '-l', action='append',
+    parser.add_argument('--limit', '-l', action='append',
                         help='Limit to only outputs matching this pattern.  There is no wildcarding.  This option can be given multiple times.')
     parser.add_argument('--check', '-c', action='store_true',
                         help="Don't encode or generate output files, just check consistency of the YAML file.  This *will* override the .info.txt output file.")
