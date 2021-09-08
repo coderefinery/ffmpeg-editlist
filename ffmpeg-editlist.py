@@ -176,7 +176,10 @@ if __name__ == '__main__':
             if args.limit and not any(limit_match in segment['output'] for limit_match in args.limit):
                 continue
             input1 = input0
-            for i, command in enumerate(segment['time']):
+            editlist = segment.get('editlist', segment.get('time'))
+            if editlist is None:
+                continue
+            for i, command in enumerate(editlist):
 
                 # Is this a command to cover a part of the video?
                 if isinstance(command, dict) and 'cover' in command:
