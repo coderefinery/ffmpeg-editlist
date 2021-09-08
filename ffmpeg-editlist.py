@@ -92,6 +92,8 @@ def map_time(lookup_table, time):
 def ensure_filedir_exists(filename):
     """Ensure a a directory exists, that can hold the file given as argument"""
     dirname = os.path.dirname(filename)
+    if dirname == '':
+        return
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
 
