@@ -303,8 +303,9 @@ if __name__ == '__main__':
             if workshop_description:
                 video_description.extend(['\n\n', workshop_description, '\n'])
 
-            with open(str(output)+'.info.txt', 'w') as toc_file:
-                toc_file.write('\n'.join(video_description))
+            if video_description:
+                with open(str(output)+'.info.txt', 'w') as toc_file:
+                    toc_file.write('\n'.join(video_description))
 
             # Print out covered segments
             for time in covers:
