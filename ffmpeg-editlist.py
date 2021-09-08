@@ -148,6 +148,7 @@ if __name__ == '__main__':
     LOGLEVEL = 31
     if args.verbose:
         LOGLEVEL = 40
+    workshop_title = None
     workshop_description = None
 
     input0 = args.input
@@ -167,6 +168,8 @@ if __name__ == '__main__':
                 input0 = segment['input']
             if 'workshop_description' in segment:
                 workshop_description = segment['workshop_description']
+            if 'workshop_title' in segment:
+                workshop_title = segment['workshop_title']
             if 'output' not in segment:
                 continue
             # Exclude non-matching files if '--limit' specified.
@@ -275,9 +278,13 @@ if __name__ == '__main__':
 
 
             video_description = [ ]
-            if 'title' in segment:
-                video_description.extend([segment['title'], '\n'])
-            if 'description' in segment:
+            if segment.get('title'):
+                title = segment['title']
+                if workshop_title is not None:
+                    title = title + ' - ' + workshop_title
+
+                video_description.extend([title, '\n'])
+            if segment.get('description'):
                 video_description.extend([segment['description'].replace('\n', '\n\n')])
             # Print out the table of contents
             for time, name in TOC:
