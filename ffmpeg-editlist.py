@@ -87,6 +87,14 @@ def map_time(lookup_table, time):
         LOG.error("Bad time lookup at %d, %s", i, lookup_table[i-1])
     return time - lookup_table[i-1][0] + lookup_table[i-1][1]
 
+def ensure_filedir_exists(filename):
+    """Ensure a a directory exists, that can hold the file given as argument"""
+    dirname = os.path.dirname(filename)
+    if not os.path.isdir(dirname):
+        os.makedirs(dirname)
+
+
+
 def shell_join(x):
     return ' '.join(shlex.quote(str(_)) for _ in x)
 
@@ -246,6 +254,7 @@ if __name__ == '__main__':
             LOG.debug(open(playlist).read())
             # Re-encode
             output = args.output / segment['output']
+            ensure_filedir_exists(output)
             cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
                    #*itertools.chain.from_iterable(('-i', x) for x in tmp_outputs),
                    #'-i', 'concat:'+'|'.join(tmp_outputs),
