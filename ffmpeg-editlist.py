@@ -5,13 +5,15 @@ import bisect
 import itertools
 import logging
 from math import floor
-from pathlib import Path
 import os
+from pathlib import Path
 import re
 import shlex
-import tempfile
-import yaml
 import subprocess
+import sys
+import tempfile
+
+import yaml
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
