@@ -1,22 +1,30 @@
 # ffmpeg editlist utility
 
+Often, one wants to reprocess a video file using some basic
+operations, such as removing certain segments.  Rather than opening a
+video editor, it is nice to be able to define a text file (the
+**editlist**) with processing instructions, and then run it.  This
+allows collaboration in the processing, for example sharing the
+editlist file via git.
+
 This utility takes a YAML definition of an edit list (segments to cut
 out and re-assemble into a file), and does the re-assembling using the
 ffmpeg command line utility.
 
 This is currently an alpha-level utility: it works, but expect to need
-code modifications to make it work for your case.  Documentation is
-not good.
+a bit of work to make it work for your case.  Documentation is needs
+improvement.  However, it has been used for several large events.
 
 Features include:
 
-* YAML edit list
-* Select segments to include.  Segments are either copied raw or
-  re-encoded (`--reencode`)
-* Give Table of Contents times in the source video, mapped to times in
+* YAML edit list definition.
+* Select segments to stitch together in the final video file.
+  Segments are either copied raw or re-encoded (`--reencode`).
+* Give Table of Contents times (for example, '16:45: Lesson 2 begins')
+  relative to the source video, output mapped to times in
   the output video automatically.
 * Cover certain areas of video (for example, when an audience member
-  appears)
+  appears).
 * Everything scripted and non-interactive.
 
 
@@ -44,6 +52,42 @@ Where `input-dir` is the search path for input files and `output-dir`
 
 
 ## Editlist definition
+
+
+### Minimal example: single file
+
+```yaml
+# Input is taken from command line argument `input`.
+- output: output.mp4
+  time:
+    - [00:00, 5:00]     # These are time segments to include
+	- [6:13, 99:00]
+```
+
+Run with `ffmpeg-editlist.py editlist.yaml input.mkv`.
+
+
+### Minimal example with multiple files
+
+```yaml
+
+- input: raw-day1.mkv
+  output: day1-part1.mkv
+  time:
+    - [1:12, 55:30]
+
+# Previous input file is used if no new input is defined
+- output: day1-part2.mkv
+  time:
+    - [1:00:12, 1:54:00]
+```
+
+Run with `ffmpeg-editlist.py editlist.yaml $input_directory`.
+
+
+### Multi-file with video descriptions
+
+This is a full example that demonstrates all features.
 
 ```yaml
 
