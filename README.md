@@ -61,7 +61,7 @@ Where `input-dir` is the search path for input files and `output-dir`
 - output: output.mp4
   time:
     - [00:00, 5:00]     # These are time segments to include
-	- [6:13, 99:00]
+    - [6:13, 99:00]
 ```
 
 Run with `ffmpeg-editlist.py editlist.yaml input.mkv`.
