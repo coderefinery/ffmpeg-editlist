@@ -49,6 +49,17 @@ ffmpeg-editlist.py editlist.yaml input-dir [-o output-dir]
 Where `input-dir` is the search path for input files and `output-dir`
 (default `.`) is the output path for files.
 
+Because of the way keyframes work, there may be missing segments
+around the transition points.  After you have tested that things seem
+reasonable, re-run with ``--reencode`` and it will do a full re-encode
+and make a seamless videos.  The default encoding settings are
+designed to be slow but good enough for all practical purposes:
+
+```
+ffmpeg-editlist.py editlist.yaml --reencode input-dir [-o output-dir]
+```
+
+
 
 
 ## Editlist definition
