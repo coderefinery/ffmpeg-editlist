@@ -7,13 +7,14 @@ video editor, it is nice to be able to define a text file (the
 allows collaboration in the processing, for example sharing the
 editlist file via git.
 
-This utility takes a YAML definition of an edit list (segments to cut
+This utility takes a YAML definition of an editlist (segments to cut
 out and re-assemble into a file), and does the re-assembling using the
 ffmpeg command line utility.
 
-This is currently an alpha-level utility: it works, but expect to need
-a bit of work to make it work for your case.  Documentation is needs
-improvement.  However, it has been used for several large events.
+This is currently an alpha-level utility: it works, but expect it may
+not exactly fit your use case without a bit of work.  Documentation is
+minimal but still needs improvement.  However, it has been used for
+several large events.
 
 Features include:
 
@@ -40,7 +41,8 @@ It depends on the `ffmpeg` command line utility and PyYAML (pip:
 
 ## Usage
 
-Create an edit list file (next section).  The general usage is:
+Create an edit list file (described in next section, including minimal
+examples).  The general usage is:
 
 ```
 ffmpeg-editlist.py editlist.yaml input-dir [-o output-dir]
@@ -50,10 +52,10 @@ Where `input-dir` is the search path for input files and `output-dir`
 (default `.`) is the output path for files.
 
 Because of the way keyframes work, there may be missing segments
-around the transition points.  After you have tested that things seem
-reasonable, re-run with ``--reencode`` and it will do a full re-encode
-and make a seamless videos.  The default encoding settings are
-designed to be slow but good enough for all practical purposes:
+around the transition points.  After you have tested that your timings
+seem reasonable, re-run with ``--reencode`` and it will do a full
+re-encoding and make a seamless videos.  The default encoding settings
+are designed to be slow but good enough for all practical purposes:
 
 ```
 ffmpeg-editlist.py editlist.yaml --reencode input-dir [-o output-dir]
