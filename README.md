@@ -45,7 +45,7 @@ Create an edit list file (described in next section, including minimal
 examples).  The general usage is:
 
 ```
-ffmpeg-editlist.py editlist.yaml input-dir [-o output-dir]
+python ffmpeg-editlist.py editlist.yaml input-dir [-o output-dir]
 ```
 
 Where `input-dir` is the search path for input files and `output-dir`
@@ -58,7 +58,7 @@ re-encoding and make a seamless videos.  The default encoding settings
 are designed to be slow but good enough for all practical purposes:
 
 ```
-ffmpeg-editlist.py editlist.yaml --reencode input-dir [-o output-dir]
+python ffmpeg-editlist.py editlist.yaml --reencode input-dir [-o output-dir]
 ```
 
 
@@ -77,7 +77,7 @@ ffmpeg-editlist.py editlist.yaml --reencode input-dir [-o output-dir]
     - [6:13, 99:00]
 ```
 
-Run with `ffmpeg-editlist.py editlist.yaml input.mkv`.
+Run with `python ffmpeg-editlist.py editlist.yaml input.mkv`.
 
 
 ### Minimal example with multiple files
@@ -95,7 +95,7 @@ Run with `ffmpeg-editlist.py editlist.yaml input.mkv`.
     - [1:00:12, 1:54:00]
 ```
 
-Run with `ffmpeg-editlist.py editlist.yaml $input_directory`.
+Run with `python ffmpeg-editlist.py editlist.yaml $input_directory`.
 
 
 ### Multi-file with video descriptions
