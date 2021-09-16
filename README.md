@@ -189,6 +189,27 @@ Workshop description.
 ```
 
 
+### Multiple inputs
+
+Multiple inputs in one segment might be useful when you are attaching
+an introduction to the main video.  Note that things might go wrong if
+the video sizes and codecs do not align perfectly.  (TODO: does this
+work as expected?)
+
+```yaml
+- output: output.mp4
+  time:
+    - input: intro.mkv
+    - [00:00, 99:00]
+	- input: main.mkv
+    - [0:00, 99:00]
+	- input: outro.mkv
+	- [0:00, 99:00]
+
+```
+
+
+
 
 ## See also
 
