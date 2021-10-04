@@ -164,7 +164,7 @@ This syntax is used to cover a segment of the video:
   time:
   - start: 00:00
   # Cover an area.  begin/end are clear.  w and h are width and
-  # height.  x and y are offset from the top-left corner
+  # height.  x and y are offset (left, down) from the top-left corner
   - cover: {begin: "1:15:29", end: "1:51:34", w: 840, h: 300, x: 360}
   - end: 5:00
 

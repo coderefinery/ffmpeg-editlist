@@ -123,7 +123,7 @@ if __name__ == '__main__':
     parser.add_argument('--reencode', action='store_true',
                         help='Re-encode all segments of the video.  See --preset and --crf to adjust parameters')
     parser.add_argument('--preset', default='veryslow',
-                        help='x264 preset to use for re-encoding.  Default is veryslow')
+                        help='x264 preset to use for re-encoding.  Default is veryslow, use ultrafast for fast testing')
     parser.add_argument('--crf', default=20, type=int,
                         help='x264 crf to use for re-encoding.  Default is 20, reasonable options are 20 (pretty good) or higher.')
     parser.add_argument('--threads', type=int,
