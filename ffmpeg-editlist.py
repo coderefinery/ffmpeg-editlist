@@ -137,6 +137,7 @@ if __name__ == '__main__':
     FFMPEG_ENCODE.extend(['-preset', args.preset])
     FFMPEG_ENCODE.extend(['-crf', str(args.crf)])
 
+    all_inputs = set()
 
     # Open the input file.  Parse out of markdown if it is markdown:
     data = open(args.editlist).read()
@@ -234,6 +235,7 @@ if __name__ == '__main__':
                 # Find input file
                 if not os.path.exists(input1):
                     input1 = args.input / input1
+                all_inputs.add(input1)
 
                 segment_list.append([seconds(start), cumulative_time])
                 segment_list.append([seconds(stop), None])
@@ -265,6 +267,8 @@ if __name__ == '__main__':
             # Re-encode
             output = args.output / segment['output']
             ensure_filedir_exists(output)
+            if output in all_inputs:
+                raise RuntimeError("Output is the same as an input file, aborting.")
             cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
                    #*itertools.chain.from_iterable(('-i', x) for x in tmp_outputs),
                    #'-i', 'concat:'+'|'.join(tmp_outputs),
