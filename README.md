@@ -201,10 +201,10 @@ work as expected?)
   time:
     - input: intro.mkv
     - [00:00, 99:00]
-	- input: main.mkv
+    - input: main.mkv
     - [0:00, 99:00]
-	- input: outro.mkv
-	- [0:00, 99:00]
+    - input: outro.mkv
+    - [0:00, 99:00]
 
 ```
 
