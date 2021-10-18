@@ -299,6 +299,7 @@ if __name__ == '__main__':
             if segment.get('description'):
                 video_description.extend([segment['description'].replace('\n', '\n\n')])
             # Print out the table of contents
+            video_description.append('\n')
             for time, name in TOC:
                 LOG.debug("TOC entry %s %s", time, name)
                 new_time = map_time(segment_list, time)
