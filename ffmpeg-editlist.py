@@ -235,6 +235,7 @@ if __name__ == '__main__':
                 # Find input file
                 if not os.path.exists(input1):
                     input1 = args.input / input1
+                    input1 = os.path.expanduser(input1)
                 all_inputs.add(input1)
 
                 segment_list.append([seconds(start), cumulative_time])
