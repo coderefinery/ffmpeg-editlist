@@ -154,10 +154,10 @@ This is a full example that demonstrates all features.
     - 33:25: Motivation to version control
     - end: 38:13
     - start: 41:28
-    - 41:28, Basics of version control
+    - -: Basics of version control        # '-' is an alias for "last start"
     - 48:35: "Exercise: record changes"   # has a ':', so must be quoted
     - end: 1:04:45
-    #- 1:18:22: This will fail
+    #- 1:18:22: This will fail, timestamp after the end
 
 This syntax is used to cover a segment of the video:
 - output: day3-has-audience-visible.mp4
