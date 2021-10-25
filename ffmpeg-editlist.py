@@ -172,7 +172,7 @@ if __name__ == '__main__':
             if 'input' in segment:
                 input0 = segment['input']
             if 'workshop_description' in segment:
-                workshop_description = segment['workshop_description']
+                workshop_description = segment['workshop_description'].strip()
             if 'workshop_title' in segment:
                 workshop_title = segment['workshop_title']
             if 'output' not in segment:
@@ -297,7 +297,7 @@ if __name__ == '__main__':
 
                 video_description.extend([title, '\n'])
             if segment.get('description'):
-                video_description.extend([segment['description'].replace('\n', '\n\n')])
+                video_description.extend([segment['description'].strip().replace('\n', '\n\n')])
             # Print out the table of contents
             video_description.append('\n')
             for time, name in TOC:
@@ -307,7 +307,7 @@ if __name__ == '__main__':
                 video_description.append(f"{humantime(new_time)} {name}")
 
             if workshop_description:
-                video_description.extend(['\n\n', workshop_description, '\n'])
+                video_description.extend(['\n-----\n', workshop_description, '\n'])
 
             if video_description:
                 with open(str(output)+'.info.txt', 'w') as toc_file:
