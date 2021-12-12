@@ -121,11 +121,21 @@ if __name__ == '__main__':
                         help='Verbose (put ffmpeg in normal mode, otherwise ffmpeg is quiet.)')
 
     parser.add_argument('--reencode', action='store_true',
-                        help='Re-encode all segments of the video.  See --preset and --crf to adjust parameters')
-    parser.add_argument('--preset', default='veryslow',
-                        help='x264 preset to use for re-encoding.  Default is veryslow, use ultrafast for fast testing')
+                        help='Re-encode all segments of the video.  See --preset and --crf to adjust parameters.'
+                             'This is needed when you start a snipet in the middle of a video, since the video decoding '
+                             'can only begin at a key frame.  '
+                             'Default false.')
     parser.add_argument('--crf', default=20, type=int,
-                        help='x264 crf to use for re-encoding.  Default is 20, reasonable options are 20 (pretty good) or higher.')
+                        help='x264 crf (preceived quality) to use for re-encoding, lower is higher quality.  '
+                             'Reasonable options are 20 (extremely good) to 30 (lower quality) (the absolute range 1 - 51); '
+                             'higher numbers take less time to encode.'
+                             'Default is 20, which should be good enough for any purpose.')
+    parser.add_argument('--preset', default='veryslow',
+                        help='x264 preset to use for re-encoding, basically the encoding speed.  '
+                             'Changing this affects how much time it will take to compress to get the --crf quality target '
+                             'you request; slower=better compression by using more expensive codec features.  '
+                             'Example options you might use include veryslow, slow, medium, fast, and ultrafast.  '
+                             'Default is veryslow, use ultrafast for fast testing.')
     parser.add_argument('--threads', type=int,
                         help='Number of encoding threads.  Default: unset, autodetect')
     parser.add_argument('--wait', action='store_true',
