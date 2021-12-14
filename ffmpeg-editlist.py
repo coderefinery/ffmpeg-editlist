@@ -187,6 +187,7 @@ if __name__ == '__main__':
                 workshop_title = segment['workshop_title']
             if 'output' not in segment:
                 continue
+            allow_reencode = segment.get('reencode', True)
             # Exclude non-matching files if '--limit' specified.
             if args.limit and not any(limit_match in segment['output'] for limit_match in args.limit):
                 continue
@@ -259,7 +260,7 @@ if __name__ == '__main__':
                 tmp_outputs.append(tmp_out)
                 cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
                        '-i', input1, '-ss', start, '-to', stop,
-                       *(FFMPEG_ENCODE if args.reencode or filters else FFMPEG_COPY),
+                       *(FFMPEG_ENCODE if (args.reencode and allow_reencode) or filters else FFMPEG_COPY),
                        *filters,
                        tmp_out,
                        ]
