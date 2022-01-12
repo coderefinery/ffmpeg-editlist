@@ -117,6 +117,11 @@ This is a full example that demonstrates all features.
 # A basic example
 # Output is relative to the output-dir command line argument.
 - output: day1-welcome.mp4
+  # If given, do not reencode this segment even if --reencode is given
+  # (useful for segments that start at 00:00).  'reencode: true' does
+  # nothing, this is the default and --reencode must still be
+  # specified on the command line.
+  #reencode: false
   time:
     - start: 12:20
     - end: 31:14
