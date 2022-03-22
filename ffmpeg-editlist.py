@@ -18,6 +18,19 @@ import yaml
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+usage = """\
+
+- workshop_description: >
+    Description
+
+
+
+- input: input.mkv
+
+  - cover: {begin: "1:15:29", end: "1:51:34", w: 840, h: 300, x: 360}
+
+"""
+
 FFMPEG_COPY = ['-vcodec', 'copy', '-acodec', 'copy',]
 FFMPEG_ENCODE = ['-c:v', 'libx264',
                  #'-preset', 'slow', '-crf', '22',
