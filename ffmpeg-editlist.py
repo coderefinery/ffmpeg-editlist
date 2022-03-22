@@ -224,7 +224,13 @@ if __name__ == '__main__':
                 elif isinstance(command, dict) and 'start' in command:
                     start = command['start']
                     continue
+                elif isinstance(command, dict) and 'begin' in command:
+                    start = command['begin']
+                    continue
                 # End command: process this segment and all queued commands
+                elif isinstance(command, dict) and 'stop' in command:
+                    stop = command['stop']
+                    # Continue below to process this segment
                 elif isinstance(command, dict) and 'end' in command:
                     stop = command['end']
                     # Continue below to process this segment
