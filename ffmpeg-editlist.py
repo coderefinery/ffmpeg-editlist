@@ -40,7 +40,7 @@ FFMPEG_ENCODE = ['-c:v', 'libx264',
 FFMPEG_COVER = \
     "drawbox=enable='between(t,{begin},{end}):w={w}:h={h}:x={x}:y={y}:t=fill:c=black"
 
-def generate_cover(begin, end, w=0, h=0, x=0, y=0):
+def generate_cover(begin, end, w=10000, h=10000, x=0, y=0):
     begin = seconds(begin)
     end = seconds(end)
     return FFMPEG_COVER.format(**locals())
