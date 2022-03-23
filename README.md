@@ -30,12 +30,19 @@ Features include:
 
 
 
-## Installation and dependencies.
+## Installation and dependencies
 
-This is a single-file script in Python, no installation is needed.
+This is on PyPI, may be installed with `pip install ffmpeg-editlist`.
+The only dependency is PyYAML so it might be reasonable to install
+with `pip install --user`.  This creates a `ffmpeg-editlist` command
+in your environment.
 
-It depends on the `ffmpeg` command line utility and PyYAML (pip:
-`pyyaml`).  Version requirements of `ffmpeg` are currently unknown.
+For usage without installing, `ffmpeg_editlist.py` works as
+stand-alone with only `pyyaml`.
+
+It depends on the `ffmpeg` command line utility, which must be
+installed through the operating system.  Version requirements of
+`ffmpeg` are currently unknown.
 
 
 
