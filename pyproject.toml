@@ -1,0 +1,28 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "ffmpeg_editlist"
+
+[project]
+name = "ffmpeg-editlist"
+authors = [{name = "Richard Darst"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+dynamic = ["version", "description"]
+dependencies = [
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+[project.scripts]
+    ffmpeg-editlist = "ffmpeg_editlist:main"
+
+[project.urls]
+Home = "https://github.com/coderefinery/ffmpeg-editlist"
