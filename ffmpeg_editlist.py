@@ -116,7 +116,7 @@ def shell_join(x):
     return ' '.join(shlex.quote(str(_)) for _ in x)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('editlist')
     parser.add_argument('input', type=Path,
@@ -350,3 +350,8 @@ if __name__ == '__main__':
 
             if args.wait:
                 input('press return to continue> ')
+
+
+
+if __name__ == '__main__':
+    main()
