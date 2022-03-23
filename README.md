@@ -222,7 +222,6 @@ work as expected?)
 
 
 
-
 ## See also
 
 * https://trac.ffmpeg.org/wiki/Concatenate
@@ -233,10 +232,10 @@ work as expected?)
 
 ## Status / Contributing
 
-Alpha, under development, basically a toy project for a single use
-(but could easily become more).  In order to use this you probably
-have to read some code / work around some bugs since it isn't well
-tested yet.
+Alpha/beta, under development, it is starting to become reusable but
+still development is for a few use cases.  In order to use this you
+probably have to read some code / work around some bugs since it isn't
+well tested yet.
 
 Bug reports or improvements welcome, but it is kind of a mess now.
 Test with ``pytest ffmpeg-editlist.py``, but note that main
