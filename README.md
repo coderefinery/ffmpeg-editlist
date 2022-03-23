@@ -131,7 +131,7 @@ This is a full example that demonstrates all features.
   #reencode: false
   time:
     - start: 12:20
-    - end: 31:14
+    - stop: 31:14
     # This older format for a segment still works but is not
     # recommended:
     #- 12:20, 31:14
@@ -144,9 +144,9 @@ This is a full example that demonstrates all features.
   time:
     # These pairs are times to *include*
     - start: 31:14
-    - end: 38:13
+    - stop: 38:13
     - start: 41:28
-    - end: 1:04:45
+    - stop: 1:04:45
 
 # A sample including table of contents entries.
 # You need to map times from the raw file, to the output file, in
@@ -155,7 +155,7 @@ This is a full example that demonstrates all features.
 # original video, and they are converted to the equivalent times in
 # the processed videos. They must be within the ranges above (and
 # you get a unhandled error if they aren't):
-#   segment_start <= toc_time < segment_end.
+#   segment_start <= toc_time < segment_stop.
 # These can be interspersed with the segment definitions.
 # Example:
 - output: day2-git-intro-2.mp4
@@ -164,11 +164,11 @@ This is a full example that demonstrates all features.
     # TOC entry:
     - 31:14: Overview of the day
     - 33:25: Motivation to version control
-    - end: 38:13
+    - stop: 38:13
     - start: 41:28
     - -: Basics of version control        # '-' is an alias for "last start"
     - 48:35: "Exercise: record changes"   # has a ':', so must be quoted
-    - end: 1:04:45
+    - stop: 1:04:45
     #- 1:18:22: This will fail, timestamp after the end
 
 This syntax is used to cover a segment of the video:
@@ -178,7 +178,7 @@ This syntax is used to cover a segment of the video:
   # Cover an area.  begin/end are clear.  w and h are width and
   # height.  x and y are offset (left, down) from the top-left corner
   - cover: {begin: "1:15:29", end: "1:51:34", w: 840, h: 300, x: 360}
-  - end: 5:00
+  - stop: 5:00
 
 
 ```
