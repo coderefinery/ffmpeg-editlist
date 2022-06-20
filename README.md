@@ -80,8 +80,10 @@ python ffmpeg-editlist.py editlist.yaml --reencode input-dir [-o output-dir]
 # Input is taken from command line argument `input`.
 - output: output.mp4
   time:
-    - [00:00, 5:00]     # These are time segments to include
-    - [6:13, 99:00]
+    - start: 00:00   # These are time segments to include
+	- stop: 5:00
+    - start: 6:13
+	- stop: 99:00
 ```
 
 Run with `python ffmpeg-editlist.py editlist.yaml input.mkv`.
@@ -94,12 +96,14 @@ Run with `python ffmpeg-editlist.py editlist.yaml input.mkv`.
 - input: raw-day1.mkv
   output: day1-part1.mkv
   time:
-    - [1:12, 55:30]
+    - start: 1:12
+	- stop: 55:30
 
 # Previous input file is used if no new input is defined
 - output: day1-part2.mkv
   time:
-    - [1:00:12, 1:54:00]
+    - start: 1:00:12
+	- stop: 1:54:00
 ```
 
 Run with `python ffmpeg-editlist.py editlist.yaml $input_directory`.
@@ -132,9 +136,6 @@ This is a full example that demonstrates all features.
   time:
     - start: 12:20
     - stop: 31:14
-    # This older format for a segment still works but is not
-    # recommended:
-    #- 12:20, 31:14
 
 # Git-intro day 1
 - output: day1-git-intro-1.mp4    # Output filename
@@ -212,11 +213,14 @@ work as expected?)
 - output: output.mp4
   time:
     - input: intro.mkv
-    - [00:00, 99:00]
+    - start: 00:00
+	- stop: 99:00
     - input: main.mkv
-    - [0:00, 99:00]
+    - start: 0:00
+	- stop: 99:00
     - input: outro.mkv
-    - [0:00, 99:00]
+    - start: 0:00
+	- stop: 99:00
 
 ```
 
