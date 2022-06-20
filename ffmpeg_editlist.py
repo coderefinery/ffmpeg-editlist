@@ -3,7 +3,7 @@
 """Cut and splice video files using a YAML definition file and ffmpeg
 """
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 import argparse
 import bisect
