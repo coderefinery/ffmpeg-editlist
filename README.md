@@ -227,7 +227,9 @@ work as expected?)
 * https://trac.ffmpeg.org/wiki/Concatenate
 * https://stackoverflow.com/q/7333232
 * Inspired by https://github.com/mvdoc/budapest-fmri-data/blob/master/scripts/preprocessing-stimulus/split_movie.sh
-
+* script for the [mpv](https://mpv.io) video player, which can copy
+  the time when you push a button.  Might need some modification:
+  https://github.com/Kr4is/mpv-copy-time
 
 
 ## Status / Contributing
