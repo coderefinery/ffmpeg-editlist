@@ -142,7 +142,7 @@ This is a full example that demonstrates all features.
   title: YouTube Video Title
   description: >
     Description of the video.
-  time:
+  editlist:
     # These pairs are times to *include*
     - start: 31:14
     - stop: 38:13
@@ -160,7 +160,7 @@ This is a full example that demonstrates all features.
 # These can be interspersed with the segment definitions.
 # Example:
 - output: day2-git-intro-2.mp4
-  time:
+  editlist:
     - start: 31:14
     # TOC entry:
     - 31:14: Overview of the day
@@ -174,7 +174,7 @@ This is a full example that demonstrates all features.
 
 This syntax is used to cover a segment of the video:
 - output: day3-has-audience-visible.mp4
-  time:
+  editlist:
   - start: 00:00
   # Cover an area.  begin/end are clear.  w and h are width and
   # height.  x and y are offset (left, down) from the top-left corner
@@ -211,7 +211,7 @@ work as expected?)
 
 ```yaml
 - output: output.mp4
-  time:
+  editlist:
     - input: intro.mkv
     - start: 00:00
 	- stop: 99:00
