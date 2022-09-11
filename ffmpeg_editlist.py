@@ -334,7 +334,7 @@ def main():
             if segment.get('description'):
                 video_description.extend([segment['description'].strip().replace('\n', '\n\n')])
             # Print out the table of contents
-            video_description.append('\n')
+            #video_description.append('\n')
             for time, name in TOC:
                 LOG.debug("TOC entry %s %s", time, name)
                 new_time = map_time(segment_list, time)
@@ -342,7 +342,7 @@ def main():
                 video_description.append(f"{humantime(new_time)} {name}")
 
             if workshop_description:
-                video_description.extend(['\n-----\n', workshop_description, '\n'])
+                video_description.extend(['-----\n', workshop_description.replace('\n', '\n\n'), '\n'])
 
             if video_description:
                 with open(str(output)+'.info.txt', 'w') as toc_file:
