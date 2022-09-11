@@ -44,6 +44,8 @@ FFMPEG_ENCODE = ['-c:v', 'libx264',
 # x is horizontal, y is vertical, from top left
 FFMPEG_COVER = \
     "drawbox=enable='between(t,{begin},{end}):w={w}:h={h}:x={x}:y={y}:t=fill:c=black"
+# Only used for images
+FFMPEG_FRAMERATE = 30
 
 def generate_cover(begin, end, w=10000, h=10000, x=0, y=0):
     begin = seconds(begin)
@@ -183,7 +185,11 @@ def main():
         LOGLEVEL = 40
     workshop_title = None
     workshop_description = None
+    options_ffmpeg_global = [ ]
 
+    #
+    # For each output file
+    #
     input0 = args.input
     for segment in data:
         #print(segment)
@@ -194,6 +200,7 @@ def main():
         cumulative_time = 0
         filters = [ ]
         covers = [ ]
+        options_ffmpeg_output = [ ]
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Find input
@@ -213,6 +220,12 @@ def main():
             editlist = segment.get('editlist', segment.get('time'))
             if editlist is None:
                 continue
+
+            #
+            # For each segment in the output
+            #
+            options_ffmpeg_segment = [ ]
+            segment_type = 'video'
             for i, command in enumerate(editlist):
 
                 # Is this a command to cover a part of the video?
@@ -224,7 +237,13 @@ def main():
                 # Input command: change input files
                 elif isinstance(command, dict) and 'input' in command:
                     input1 = command['input']
-                    continue
+                    # Handle png images
+                    if 'duration' in command:
+                        start = 0
+                        stop = seconds(command['duration'])
+                        segment_type = 'image'
+                    else:
+                        continue
                 # Start command: start a segment
                 elif isinstance(command, dict) and 'start' in command:
                     start = command['start']
@@ -253,7 +272,8 @@ def main():
                     continue
 
 
-                # A time segment in the format 'start, stop'
+                # The end of our time segment (from 'start' to 'stop').  Do the
+                # actual processing of this segment now.
                 else:
                     # time can be string with comma or list
                     time = command
@@ -279,19 +299,40 @@ def main():
                 # filters
                 if filters:
                     filters = ['-vf', ','.join(filters)]
+                # Encode for video, image, etc?
+                if segment_type == 'video':
+                    encoding_args = ['-i', input1,
+                                     '-ss', start, '-to', stop,
+                                     *(FFMPEG_ENCODE if (args.reencode and allow_reencode) or filters else FFMPEG_COPY),
+                                     ]
+                elif segment_type == 'image':
+                    # https://trac.ffmpeg.org/wiki/Slideshow
+                    encoding_args = ['-loop', '1',
+                                     '-i', input1,
+                                     '-t', str(command['duration']),
+                                     '-vf', f'fps={FFMPEG_FRAMERATE},format=yuv420p',
+                                     '-c:v', 'libx264', ]#'-r', str(FFMPEG_FRAMERATE)]
+                else:
+                    raise RuntimeError(f"unknown segment_type: {segment_type}")
 
+                # Do encoding
                 tmp_out = str(Path(tmpdir)/('tmpout-%02d.mp4'%i))
                 tmp_outputs.append(tmp_out)
                 cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
-                       '-i', input1, '-ss', start, '-to', stop,
-                       *(FFMPEG_ENCODE if (args.reencode and allow_reencode) or filters else FFMPEG_COPY),
+                       *encoding_args,
+                       *options_ffmpeg_output,
+                       *options_ffmpeg_segment,
                        *filters,
                        tmp_out,
                        ]
                 LOG.info(shell_join(cmd))
                 if not args.check:
                     subprocess.check_call(cmd)
+
+                # Reset for the next round
                 filters = [ ]
+                options_ffmpeg_segment = [ ]
+                segment_type = 'video'
 
             # Create the playlist of inputs
             playlist = Path(tmpdir) / 'playlist.txt'
