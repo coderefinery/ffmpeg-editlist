@@ -79,7 +79,10 @@ python ffmpeg-editlist.py editlist.yaml --reencode input-dir [-o output-dir]
 ```yaml
 # Input is taken from command line argument `input`.
 - output: output.mp4
-  time:
+  title: This is the title
+  description: >-
+    This is the multi-line description.
+  editlist:
     - start: 00:00   # These are time segments to include
     - stop: 5:00
     - start: 6:13
@@ -95,13 +98,13 @@ Run with `python ffmpeg-editlist.py editlist.yaml input.mkv`.
 
 - input: raw-day1.mkv
   output: day1-part1.mkv
-  time:
+  editlist:
     - start: 1:12
     - stop: 55:30
 
 # Previous input file is used if no new input is defined
 - output: day1-part2.mkv
-  time:
+  editlist:
     - start: 1:00:12
     - stop: 1:54:00
 ```
@@ -133,7 +136,7 @@ This is a full example that demonstrates all features.
   # nothing, this is the default and --reencode must still be
   # specified on the command line.
   #reencode: false
-  time:
+  editlist:
     - start: 12:20
     - stop: 31:14
 
