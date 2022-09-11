@@ -99,15 +99,16 @@ def test_humantime():
     assert humantime(7350) == "2:02:30"
     assert humantime(43950) == "12:12:30"
 
-def map_time(lookup_table, time):
+def map_time(seg_n, lookup_table, time):
     """Map a time from source time to output time
     """
-    time_lookup_vals = [x[0] for x in lookup_table]
-    i = bisect.bisect_right(time_lookup_vals, time)
-    if lookup_table[i-1][1] is None:
+    time_lookup_vals = [(x[0], x[1]) for x in lookup_table]
+    i = bisect.bisect_right(time_lookup_vals, (seg_n, time))
+    #print(f"lookup of {seg_n},{time} found at i={i}")
+    if lookup_table[i-1][2] is None:
         LOG.error("%s", lookup_table)
         LOG.error("Bad time lookup at %d, %s", i, lookup_table[i-1])
-    return time - lookup_table[i-1][0] + lookup_table[i-1][1]
+    return time - lookup_table[i-1][1] + lookup_table[i-1][2]
 
 def ensure_filedir_exists(filename):
     """Ensure a a directory exists, that can hold the file given as argument"""
@@ -226,12 +227,13 @@ def main():
             #
             options_ffmpeg_segment = [ ]
             segment_type = 'video'
+            segment_number = 0
             for i, command in enumerate(editlist):
 
                 # Is this a command to cover a part of the video?
                 if isinstance(command, dict) and 'cover' in command:
                     cover = command['cover']
-                    covers.append(seconds(cover['begin']))
+                    covers.append((segment_number, seconds(cover['begin'])))
                     filters.append(generate_cover(**cover))
                     continue
                 # Input command: change input files
@@ -242,13 +244,16 @@ def main():
                         start = 0
                         stop = seconds(command['duration'])
                         segment_type = 'image'
+                        segment_number += 1
                     else:
                         continue
                 # Start command: start a segment
                 elif isinstance(command, dict) and 'start' in command:
+                    segment_number += 1
                     start = command['start']
                     continue
                 elif isinstance(command, dict) and 'begin' in command:
+                    segment_number += 1
                     start = command['begin']
                     continue
                 # End command: process this segment and all queued commands
@@ -268,7 +273,7 @@ def main():
                         time = start
                     #print(start, title)
                     #print('TOC', start, title, segment)
-                    TOC.append((seconds(time), title))
+                    TOC.append((segment_number, seconds(time), title))
                     continue
 
 
@@ -293,8 +298,8 @@ def main():
                     input1 = os.path.expanduser(input1)
                 all_inputs.add(input1)
 
-                segment_list.append([seconds(start), cumulative_time])
-                segment_list.append([seconds(stop), None])
+                segment_list.append([segment_number, seconds(start), cumulative_time])
+                segment_list.append([segment_number, seconds(stop), None])
                 cumulative_time += seconds(stop) - seconds(start)
                 # filters
                 if filters:
@@ -376,9 +381,9 @@ def main():
                 video_description.extend([segment['description'].strip().replace('\n', '\n\n')])
             # Print out the table of contents
             #video_description.append('\n')
-            for time, name in TOC:
+            for seg_n, time, name in TOC:
                 LOG.debug("TOC entry %s %s", time, name)
-                new_time = map_time(segment_list, time)
+                new_time = map_time(seg_n, segment_list, time)
                 print(humantime(new_time), name)
                 video_description.append(f"{humantime(new_time)} {name}")
 
@@ -389,9 +394,9 @@ def main():
                 with open(str(output)+'.info.txt', 'w') as toc_file:
                     toc_file.write('\n'.join(video_description))
 
-            # Print out covered segments
-            for time in covers:
-                new_time = map_time(segment_list, time)
+            # Print out covered segments (for verification purposes)
+            for seg_n, time in covers:
+                new_time = map_time(seg_n, segment_list, time)
                 LOG.info("Check cover at %s", humantime(new_time))
 
             if args.wait:
