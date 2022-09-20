@@ -258,10 +258,17 @@ work as expected?)
 
 * https://trac.ffmpeg.org/wiki/Concatenate
 * https://stackoverflow.com/q/7333232
-* Inspired by https://github.com/mvdoc/budapest-fmri-data/blob/master/scripts/preprocessing-stimulus/split_movie.sh
-* script for the [mpv](https://mpv.io) video player, which can copy
-  the time when you push a button.  Might need some modification:
-  https://github.com/Kr4is/mpv-copy-time
+* Inspired by
+  https://github.com/mvdoc/budapest-fmri-data/blob/master/scripts/preprocessing-stimulus/split_movie.sh
+* mpv (https://mpv.io/) is a video player with good command line
+  interface, keyboard shortcuts, and scriptable so that you can make a
+  hotkey that copies the current time.
+  * script for the mpv video player, which can copy the time when you
+    push a button.  Might need some modification:
+    https://github.com/Kr4is/mpv-copy-time
+  * `[` and `]` change the playback speed.  `O` causes time to be
+    permanently shown.  `→` and `←` seek, `↑` and `↓` seek longer, and
+    `--hr-seek` allows seeking exactly.
 
 
 ## Status / Contributing
