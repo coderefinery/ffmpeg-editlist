@@ -129,7 +129,7 @@ def shell_join(x):
     return ' '.join(shlex.quote(str(_)) for _ in x)
 
 
-def main():
+def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument('editlist')
     parser.add_argument('input', type=Path,
@@ -166,7 +166,7 @@ def main():
                         help='Number of encoding threads.  Default: unset, autodetect')
     parser.add_argument('--wait', action='store_true',
                         help='Wait after each encoding (don\'t clean up the temporary directory right away')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.threads:
         FFMPEG_ENCODE.extend(['-threads', str(args.threads)])
