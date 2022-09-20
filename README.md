@@ -48,15 +48,38 @@ installed through the operating system.  Version requirements of
 
 ## Usage
 
-Create an edit list file (described in next section, including minimal
-examples).  The general usage is:
+Start with a directory of your videos (example: `day1-raw.mkv`).
+
+Create an edit list file (described in next section).  A minimal
+example is:
+
+```yaml
+- input: day1-raw.mkv
+
+- output: part1.mkv
+  title: This is the title of part1
+  description: >-
+    This is the multi-line description
+	of part 1.
+  editlist:
+    - start: 00:00   # These are time segments to include
+	- 4:00: Begin exercise 1
+    - stop: 5:00
+    - start: 6:13
+	- -: Going over the exercises  # '-' means "latest start time".
+    - stop: 99:00
+```
+
+The general usage is then:
 
 ```
-python ffmpeg-editlist.py editlist.yaml input-dir [-o output-dir]
+python ffmpeg-editlist.py EDITLIST.yaml INPUT-DIR [-o OUTPUT-DIR]
 ```
 
-Where `input-dir` is the search path for input files and `output-dir`
-(default `.`) is the output path for files.
+Where `INPUT-DIR` is the search path for input files and `OUTPUT-DIR`
+(default `.`) is the output path for files.  You can use the `--limit
+PATTERN` option to reprocess only a few videos (example: `--limit
+part1`).
 
 Because of the way keyframes work, there may be missing segments
 around the transition points.  After you have tested that your timings
@@ -65,9 +88,11 @@ re-encoding and make a seamless videos.  The default encoding settings
 are designed to be slow but good enough for all practical purposes:
 
 ```
-python ffmpeg-editlist.py editlist.yaml --reencode input-dir [-o output-dir]
+python ffmpeg-editlist.py EDITLIST.yaml --reencode INPUT-DIR [-o OUTPUT-DIR]
 ```
 
+`OUTPUT-DIR` will get the encoded files, and `.txt` files with the
+video descriptions ready to upload to your video hosting site.
 
 
 
