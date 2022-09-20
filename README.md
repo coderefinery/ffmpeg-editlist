@@ -60,13 +60,13 @@ example is:
   title: This is the title of part1
   description: >-
     This is the multi-line description
-	of part 1.
+    of part 1.
   editlist:
     - start: 00:00   # These are time segments to include
-	- 4:00: Begin exercise 1
+    - 4:00: Begin exercise 1
     - stop: 5:00
     - start: 6:13
-	- -: Going over the exercises  # '-' means "latest start time".
+    - -: Going over the exercises  # '-' means "latest start time".
     - stop: 99:00
 ```
 
