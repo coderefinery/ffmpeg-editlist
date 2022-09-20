@@ -25,4 +25,4 @@ test = [
     ffmpeg-editlist = "ffmpeg_editlist:main"
 
 [project.urls]
-Home = "https://github.com/coderefinery/ffmpeg-editlist"
+Home = "https://github.com/coderefinery/ffmpeg-editlist/"
