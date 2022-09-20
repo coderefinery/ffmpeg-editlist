@@ -105,9 +105,14 @@ def map_time(seg_n, lookup_table, time):
     time_lookup_vals = [(x[0], x[1]) for x in lookup_table]
     i = bisect.bisect_right(time_lookup_vals, (seg_n, time))
     #print(f"lookup of {seg_n},{time} found at i={i}")
+    if lookup_table[i-1][1] is None:
+        #LOG.error("%s", lookup_table)
+        #LOG.error("%s", time)
+        LOG.error("Bad time lookup (type 1) for %s(=%ss)", humantime(time), time)
     if lookup_table[i-1][2] is None:
-        LOG.error("%s", lookup_table)
-        LOG.error("Bad time lookup at %d, %s", i, lookup_table[i-1])
+        #LOG.error("%s", lookup_table)
+        #LOG.error("%s", time)
+        LOG.error("Bad time lookup (type 2) for %s(=%ss)", humantime(time), time)
     return time - lookup_table[i-1][1] + lookup_table[i-1][2]
 
 def ensure_filedir_exists(filename):
