@@ -16,6 +16,8 @@ not exactly fit your use case without a bit of work.  Documentation is
 minimal but still needs improvement.  However, it has been used for
 several large events.
 
+Video demonstration: https://youtu.be/thvMNTBJg2Y
+
 Features include:
 
 * YAML edit list definition.
