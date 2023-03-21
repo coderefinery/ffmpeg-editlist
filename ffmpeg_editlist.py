@@ -52,6 +52,9 @@ def generate_cover(begin, end, w=10000, h=10000, x=0, y=0):
     end = seconds(end)
     return FFMPEG_COVER.format(**locals())
 
+def generate_crop(w, h, x, y):
+    return ['-filter:v', f"crop={w}:{h}:{x}:{y}"]
+
 
 def is_time(x):
     m = re.match(r'((\d{1,2}:)?\d{1,2}:)?\d{1,2}(\.\d*)?$', x)
@@ -218,6 +221,11 @@ def main(argv=sys.argv[1:]):
                 workshop_description = segment['workshop_description'].strip()
             if 'workshop_title' in segment:
                 workshop_title = segment['workshop_title']
+            if 'crop' in segment:
+                # -filter:v "crop=w:h:x:y"    - x:y is top-left corner
+                options_ffmpeg_output.extend(generate_crop(**segment['crop']))
+
+
             if 'output' not in segment:
                 continue
             allow_reencode = segment.get('reencode', True)
