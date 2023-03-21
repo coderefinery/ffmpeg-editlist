@@ -109,10 +109,12 @@ def map_time(seg_n, lookup_table, time):
         #LOG.error("%s", lookup_table)
         #LOG.error("%s", time)
         LOG.error("Bad time lookup (type 1) for %s(=%ss)", humantime(time), time)
+        sys.exit(1)
     if lookup_table[i-1][2] is None:
         #LOG.error("%s", lookup_table)
         #LOG.error("%s", time)
         LOG.error("Bad time lookup (type 2) for %s(=%ss)", humantime(time), time)
+        sys.exit(1)
     return time - lookup_table[i-1][1] + lookup_table[i-1][2]
 
 def ensure_filedir_exists(filename):
