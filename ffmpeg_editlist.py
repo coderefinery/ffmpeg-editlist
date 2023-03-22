@@ -36,11 +36,10 @@ usage = """\
 
 """
 
-FFMPEG_COPY = ['-vcodec', 'copy', '-acodec', 'copy',]
-FFMPEG_ENCODE = ['-c:v', 'libx264',
-                 #'-preset', 'slow', '-crf', '22',
-                 '-c:a', 'copy',
-                 ]
+FFMPEG_VIDEO_COPY = ['-vcodec', 'copy',]
+FFMPEG_VIDEO_ENCODE = ['-c:v', 'libx264', ] #'-preset', 'slow', '-crf', '22'
+FFMPEG_AUDIO_COPY = ['-acodec', 'copy',]
+FFMPEG_AUDIO_ENCODE = ['-acodec', 'aac', '-b:a', '160k', ]
 # x is horizontal, y is vertical, from top left
 FFMPEG_COVER = \
     "drawbox=enable='between(t,{begin},{end}):w={w}:h={h}:x={x}:y={y}:t=fill:c=black"
@@ -174,9 +173,9 @@ def main(argv=sys.argv[1:]):
     args = parser.parse_args(argv)
 
     if args.threads:
-        FFMPEG_ENCODE.extend(['-threads', str(args.threads)])
-    FFMPEG_ENCODE.extend(['-preset', args.preset])
-    FFMPEG_ENCODE.extend(['-crf', str(args.crf)])
+        FFMPEG_VIDEO_ENCODE.extend(['-threads', str(args.threads)])
+    FFMPEG_VIDEO_ENCODE.extend(['-preset', args.preset])
+    FFMPEG_VIDEO_ENCODE.extend(['-crf', str(args.crf)])
 
     all_inputs = set()
 
@@ -323,7 +322,8 @@ def main(argv=sys.argv[1:]):
                 if segment_type == 'video':
                     encoding_args = ['-i', input1,
                                      '-ss', start, '-to', stop,
-                                     *(FFMPEG_ENCODE if (args.reencode and allow_reencode) or filters else FFMPEG_COPY),
+                                     *(FFMPEG_VIDEO_ENCODE if (args.reencode and allow_reencode) or filters else FFMPEG_VIDEO_COPY),
+                                     *FFMPEG_AUDIO_COPY,
                                      ]
                 elif segment_type == 'image':
                     # https://trac.ffmpeg.org/wiki/Slideshow
