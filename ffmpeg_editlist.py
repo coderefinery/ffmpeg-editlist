@@ -391,23 +391,26 @@ def main(argv=sys.argv[1:]):
                 if workshop_title is not None:
                     title = title + ' - ' + workshop_title
 
-                video_description.extend([title, '\n'])
+                video_description.extend([title.strip()])
             if segment.get('description'):
                 video_description.extend([segment['description'].strip().replace('\n', '\n\n')])
             # Print out the table of contents
             #video_description.append('\n')
+            toc = [ ]
             for seg_n, time, name in TOC:
                 LOG.debug("TOC entry %s %s", time, name)
                 new_time = map_time(seg_n, segment_list, time)
                 print(humantime(new_time), name)
-                video_description.append(f"{humantime(new_time)} {name}")
+                toc.append(f"{humantime(new_time)} {name}")
+            video_description.append('\n'.join(toc))
 
             if workshop_description:
-                video_description.extend(['-----\n', workshop_description.replace('\n', '\n\n'), '\n'])
+                video_description.append('-----')
+                video_description.append(workshop_description.replace('\n', '\n\n').strip())
 
             if video_description:
                 with open(str(output)+'.info.txt', 'w') as toc_file:
-                    toc_file.write('\n'.join(video_description))
+                    toc_file.write('\n\n'.join(video_description))
 
             # Print out covered segments (for verification purposes)
             for seg_n, time in covers:
