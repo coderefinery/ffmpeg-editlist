@@ -406,7 +406,8 @@ def main(argv=sys.argv[1:]):
                 new_time = map_time(seg_n, segment_list, time)
                 print(humantime(new_time), name)
                 toc.append(f"{humantime(new_time)} {name}")
-            video_description.append('\n'.join(toc))
+            if toc:
+                video_description.append('\n'.join(toc))
 
             if workshop_description:
                 video_description.append('-----')
