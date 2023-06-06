@@ -305,6 +305,8 @@ def main(argv=sys.argv[1:]):
                 start = str(start).strip()
                 stop = str(stop).strip()
 
+                # Print status
+                LOG.info("\n\nBeginning %s", segment.get('title') if 'title' in segment else '[no title]')
 
                 # Find input file
                 if not os.path.exists(input1):
@@ -325,6 +327,8 @@ def main(argv=sys.argv[1:]):
                                      *(FFMPEG_VIDEO_ENCODE if (args.reencode and allow_reencode) or filters else FFMPEG_VIDEO_COPY),
                                      *FFMPEG_AUDIO_COPY,
                                      ]
+                    if seconds(start) > seconds(stop):
+                        raise RuntimeError(f"start is greater than stop time ({start} > {stop} time in {segment.get('title')}")
                 elif segment_type == 'image':
                     # https://trac.ffmpeg.org/wiki/Slideshow
                     encoding_args = ['-loop', '1',
