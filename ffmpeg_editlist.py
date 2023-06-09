@@ -170,6 +170,8 @@ def main(argv=sys.argv[1:]):
                         help='Number of encoding threads.  Default: unset, autodetect')
     parser.add_argument('--wait', action='store_true',
                         help='Wait after each encoding (don\'t clean up the temporary directory right away')
+    parser.add_argument('--list', action='store_true',
+                        help="Don't do anything, just list all outputs that would be processed (and nothing else)")
     args = parser.parse_args(argv)
 
     if args.threads:
@@ -230,6 +232,9 @@ def main(argv=sys.argv[1:]):
             allow_reencode = segment.get('reencode', True)
             # Exclude non-matching files if '--limit' specified.
             if args.limit and not any(limit_match in segment['output'] for limit_match in args.limit):
+                continue
+            if args.list:
+                print(segment['output'])
                 continue
             input1 = input0
             editlist = segment.get('editlist', segment.get('time'))
