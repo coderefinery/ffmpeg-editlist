@@ -7,6 +7,7 @@ __version__ = '0.5.2'
 
 import argparse
 import bisect
+import contextlib
 import itertools
 import logging
 from math import floor
@@ -14,6 +15,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -127,10 +129,37 @@ def ensure_filedir_exists(filename):
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
 
+@contextlib.contextmanager
+def atomic_write(fname, mode='w+b'):
+    """Atomically write into the given fname.
 
+    Returns a NamedTemporaryFile that will be moved (atomically,
+    os.replace).  Use [returnvalue].name to access the file's name.
+    """
+    if os.access(fname, os.F_OK) and not os.access(fname, os.W_OK, follow_symlinks=False):
+        raise PermissionError(fname)
+    root, ext = os.path.splitext(fname)
+    import string
+    import random
+    randstr = ''.join(random.choice(string.ascii_lowercase) for i in range(20))
+    tmp = '.'.join((str(fname), randstr, 'tmp'))
+    try:
+        yield tmp
+    except:
+        try:
+            os.unlink(tmp)
+        except FileNotFoundError:
+            pass
+        raise
+    else:
+        try:
+            os.replace(tmp, fname)
+        except FileNotFoundError:
+            pass
 
 def shell_join(x):
     return ' '.join(shlex.quote(str(_)) for _ in x)
+
 
 
 def main(argv=sys.argv[1:]):
@@ -375,6 +404,7 @@ def main(argv=sys.argv[1:]):
             ensure_filedir_exists(output)
             if output in all_inputs:
                 raise RuntimeError("Output is the same as an input file, aborting.")
+            tmpdir_out = str(Path(tmpdir)/('final-'+segment['output']))
             cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
                    #*itertools.chain.from_iterable(('-i', x) for x in tmp_outputs),
                    #'-i', 'concat:'+'|'.join(tmp_outputs),
@@ -382,11 +412,15 @@ def main(argv=sys.argv[1:]):
                    '-fflags', '+igndts',
                    '-c', 'copy',
                    *(['-y'] if args.force else []),
-                   output,
+                   tmpdir_out,
                    ]
             LOG.info(shell_join(cmd))
             if not args.check:
                 subprocess.check_call(cmd)
+            # We need another copy, since ffmpeg detects output based on filename.  Yet for atomicness, we need a temporary filename for the temp part
+            if not args.check:
+                with atomic_write(output) as tmp_output:
+                    os.rename(tmpdir_out, tmp_output)
 
             # Print table of contents
             import pprint
@@ -419,8 +453,8 @@ def main(argv=sys.argv[1:]):
                 video_description.append(workshop_description.replace('\n', '\n\n').strip())
 
             if video_description:
-                with open(str(output)+'.info.txt', 'w') as toc_file:
-                    toc_file.write('\n\n'.join(video_description))
+                with atomic_write(str(output)+'.info.txt', 'w') as toc_file:
+                    open(toc_file, 'w').write('\n\n'.join(video_description))
 
             # Print out covered segments (for verification purposes)
             for seg_n, time in covers:
