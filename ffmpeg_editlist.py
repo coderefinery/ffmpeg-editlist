@@ -420,7 +420,7 @@ def main(argv=sys.argv[1:]):
             # We need another copy, since ffmpeg detects output based on filename.  Yet for atomicness, we need a temporary filename for the temp part
             if not args.check:
                 with atomic_write(output) as tmp_output:
-                    os.rename(tmpdir_out, tmp_output)
+                    shutil.move(tmpdir_out, tmp_output)
 
             # Print table of contents
             import pprint
