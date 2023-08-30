@@ -374,7 +374,7 @@ def main(argv=sys.argv[1:]):
                     raise RuntimeError(f"unknown segment_type: {segment_type}")
 
                 # Do encoding
-                tmp_out = str(Path(tmpdir)/('tmpout-%02d.mp4'%i))
+                tmp_out = str(Path(tmpdir)/('tmpout-%02d.mkv'%i))
                 tmp_outputs.append(tmp_out)
                 cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
                        *encoding_args,
