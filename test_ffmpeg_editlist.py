@@ -13,7 +13,7 @@ import ffmpeg_editlist
 @pytest.fixture
 def tmpdir():
     """temporary directory fixture"""
-    with tempfile.TemporaryDirectory() as name:
+    with tempfile.TemporaryDirectory(prefix='ffmpeg-editlist-tmp-') as name:
         yield pathlib.Path(name)
 
 def video_info(fname):
