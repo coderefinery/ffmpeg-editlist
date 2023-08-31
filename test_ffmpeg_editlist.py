@@ -81,6 +81,24 @@ def test_concatenate(runner):
     ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output, '--reencode', *TEST_OPTS])
     runner.check_duration('10s.mkv', 10)
 
+def test_cover(runner):
+    yaml = """
+- input: video-10s.mkv
+  output: covered.mkv
+  editlist:
+    - start: 00:00
+    - cover: {begin: "00:01", end: "00:03"}
+    - cover: {begin: "00:03", end: "00:04"}
+    - stop: 00:05
+"""
+    runner.input = yaml
+    ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output, '--reencode', *TEST_OPTS])
+    # For manual testing:
+    #print(runner.get_output('covered.mkv'))
+    #input()
+    runner.check_duration('covered.mkv', 5)
+
+
 def test_png(runner):
     yaml="""
 - output: png-to-video.mkv

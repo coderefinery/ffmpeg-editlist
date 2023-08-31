@@ -44,7 +44,7 @@ FFMPEG_AUDIO_COPY = ['-acodec', 'copy',]
 FFMPEG_AUDIO_ENCODE = ['-acodec', 'aac', '-b:a', '160k', ]
 # x is horizontal, y is vertical, from top left
 FFMPEG_COVER = \
-    "drawbox=enable='between(t,{begin},{end}):w={w}:h={h}:x={x}:y={y}:t=fill:c=black"
+    "drawbox=enable='between(t,{begin},{end}):w={w}:h={h}:x={x}:y={y}:t=fill:c=black'"
 # Only used for images
 FFMPEG_FRAMERATE = 30
 
