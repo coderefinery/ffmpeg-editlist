@@ -25,6 +25,7 @@ def video_info(fname):
     return data
 
 
+TEST_OPTS = ['--crf=51', '--preset=veryfast']
 
 class Runner():
     def __init__(self, tmpdir):
@@ -62,7 +63,7 @@ def test_5s(runner):
     - stop: 00:05
 """
     runner.input = yaml
-    ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output])
+    ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output, '--reencode', *TEST_OPTS])
     runner.check_duration('5s.mkv', 5)
 
 def test_concatenate(runner):
@@ -77,7 +78,7 @@ def test_concatenate(runner):
     - stop: 00:07
 """
     runner.input = yaml
-    ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output])
+    ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output, '--reencode', *TEST_OPTS])
     runner.check_duration('10s.mkv', 10)
 
 def test_png(runner):
@@ -97,6 +98,6 @@ def test_png(runner):
 """
     runner.input = yaml
     # reencode needed
-    ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output, '--reencode'])
+    ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output, '--reencode' , *TEST_OPTS])
     runner.check_duration('png-to-video.mkv', 15)
 
