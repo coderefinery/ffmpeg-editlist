@@ -319,6 +319,9 @@ def main(argv=sys.argv[1:]):
                     ( (time, title), ) = list(command.items())
                     if time == '-':
                         time = start
+                    if title in {'stop', 'start', 'begin', 'end', 'cover', 'input'}:
+                        LOG.error("ERROR: Suspicious TOC entry name, aborting encoding: %s", title)
+                        sys.exit(1)
                     #print(start, title)
                     #print('TOC', start, title, segment)
                     TOC.append((segment_number, seconds(time), title))
