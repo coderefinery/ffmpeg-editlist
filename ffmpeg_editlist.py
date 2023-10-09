@@ -343,7 +343,7 @@ def main(argv=sys.argv[1:]):
                 stop = str(stop).strip()
 
                 # Print status
-                LOG.info("\n\nBeginning %s", segment.get('title') if 'title' in segment else '[no title]')
+                LOG.info("\n\nBeginning %s (line %d)", segment.get('title') if 'title' in segment else '[no title]', i)
 
                 # Find input file
                 if not os.path.exists(input1):
