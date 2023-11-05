@@ -119,3 +119,23 @@ def test_png(runner):
     ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output, '--reencode' , *TEST_OPTS])
     runner.check_duration('png-to-video.mkv', 15)
 
+def test_srt(runner):
+    yaml="""
+- input: count10.mkv
+- output: count10-out.mkv
+  editlist:
+    - start: 00:01
+    - end:   00:05
+    - start: 00:06
+    - end:   00:08
+"""
+    runner.input = yaml
+    # reencode needed
+    ffmpeg_editlist.main([runner.input, 'sample/', '-o', runner.output, '--srt' , *TEST_OPTS])
+    srt_file = runner.tmpdir/'count10-out.srt'
+    srt_data = open(srt_file).read()
+    assert 'one' not in srt_data
+    assert '2,200\nthree' in srt_data
+    assert '3,600' in srt_data
+    assert '4,000\nfive' in srt_data
+    assert '6,000\neight' in srt_data

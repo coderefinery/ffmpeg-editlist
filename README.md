@@ -29,6 +29,7 @@ Features include:
 * Cover certain areas of video (for example, when an audience member
   appears).
 * Everything scripted and non-interactive.
+* Cutting and re-splicing subtitles, too.
 
 
 
@@ -95,6 +96,15 @@ python ffmpeg-editlist.py EDITLIST.yaml --reencode INPUT-DIR [-o OUTPUT-DIR]
 
 `OUTPUT-DIR` will get the encoded files, and `.txt` files with the
 video descriptions ready to upload to your video hosting site.
+
+Subtitles: The option `--srt` will make ffmpeg-editlist reprocess
+subtitles just like video segments (cut to the segments and adjust
+timestamps).  A `.srt` file is expected alongside each input file
+(input file's extension replaced with `.srt`), and an output is
+similarly placed alongside each output.  Warning: make sure that no
+segment's declared stop time goes beyond the actual file length.  It's
+possible that there will be some weird effects around the
+beginning/end of the segments if subtitles go beyond the start/stop.
 
 
 
