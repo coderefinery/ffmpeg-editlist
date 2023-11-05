@@ -8,6 +8,8 @@ __version__ = '0.5.2'
 import argparse
 import bisect
 import contextlib
+import copy
+from datetime import timedelta
 import itertools
 import logging
 from math import floor
@@ -169,6 +171,8 @@ def main(argv=sys.argv[1:]):
                         help="Input file or directory of files.")
     parser.add_argument('--output', '-o', default='.', type=Path,
                         help='Output directory')
+    parser.add_argument('--srt', action='store_true',
+                        help='Also convert subtitles')
 
     parser.add_argument('--limit', '-l', action='append',
                         help='Limit to only outputs matching this pattern.  There is no wildcarding.  This option can be given multiple times.')
@@ -208,6 +212,9 @@ def main(argv=sys.argv[1:]):
     FFMPEG_VIDEO_ENCODE.extend(['-preset', args.preset])
     FFMPEG_VIDEO_ENCODE.extend(['-crf', str(args.crf)])
 
+    if args.srt:
+        import srt
+
     all_inputs = set()
 
     # Open the input file.  Parse out of markdown if it is markdown:
@@ -242,6 +249,7 @@ def main(argv=sys.argv[1:]):
         filters = [ ]
         covers = [ ]
         options_ffmpeg_output = [ ]
+        subtitles = [ ]
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Find input
@@ -353,6 +361,7 @@ def main(argv=sys.argv[1:]):
 
                 segment_list.append([segment_number, seconds(start), cumulative_time])
                 segment_list.append([segment_number, seconds(stop), None])
+                start_cumulative = cumulative_time
                 cumulative_time += seconds(stop) - seconds(start)
                 # filters
                 if filters:
@@ -390,6 +399,23 @@ def main(argv=sys.argv[1:]):
                 if not args.check:
                     subprocess.check_call(cmd)
 
+                # Subtitles?
+                if args.srt:
+                    sub_file = os.path.splitext(input1)[0] + '.srt'
+                    start_dt = timedelta(seconds=seconds(start))
+                    end_dt   = timedelta(seconds=seconds(stop))
+                    start_cumulative_dt = timedelta(seconds=start_cumulative)
+                    duration_segment_dt = end_dt-start_dt
+                    for sub in srt.parse(open(sub_file).read()):
+                        if sub.end < start_dt: continue
+                        if sub.start > end_dt: continue
+                        sub = copy.copy(sub)
+                        sub.start = sub.start - start_dt + start_cumulative_dt
+                        sub.end   = sub.end   - start_dt + start_cumulative_dt
+                        sub.start = max(sub.start, start_cumulative_dt)
+                        sub.end   = min(sub.end,   start_cumulative_dt + duration_segment_dt)
+                        subtitles.append(sub)
+
                 # Reset for the next round
                 filters = [ ]
                 options_ffmpeg_segment = [ ]
@@ -424,6 +450,11 @@ def main(argv=sys.argv[1:]):
             if not args.check:
                 with atomic_write(output) as tmp_output:
                     shutil.move(tmpdir_out, tmp_output)
+
+            # Subtitles
+            if args.srt:
+                srt_output = os.path.splitext(output)[0] + '.srt'
+                open(srt_output, 'w').write(srt.compose(subtitles))
 
             # Print table of contents
             import pprint

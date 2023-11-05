@@ -20,6 +20,9 @@ dependencies = [
 test = [
     "pytest",
 ]
+srt = [
+    "srt",
+]
 
 [project.scripts]
     ffmpeg-editlist = "ffmpeg_editlist:main"
