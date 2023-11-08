@@ -487,7 +487,7 @@ def main(argv=sys.argv[1:]):
                 video_description.append(workshop_description.replace('\n', '\n\n').strip())
 
             if video_description:
-                with atomic_write(str(output)+'.info.txt', 'w') as toc_file:
+                with atomic_write(os.path.splitext(str(output))[0]+'.info.txt', 'w') as toc_file:
                     open(toc_file, 'w').write('\n\n'.join(video_description))
 
             # Print out covered segments (for verification purposes)
