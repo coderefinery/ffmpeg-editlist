@@ -433,7 +433,7 @@ def main(argv=sys.argv[1:]):
             ensure_filedir_exists(output)
             if output in all_inputs:
                 raise RuntimeError("Output is the same as an input file, aborting.")
-            tmpdir_out = str(Path(tmpdir)/('final-'+segment['output']))
+            tmpdir_out = str(Path(tmpdir)/('final-'+segment['output'].replace('/', '%2F')))
             cmd = ['ffmpeg', '-loglevel', str(LOGLEVEL),
                    #*itertools.chain.from_iterable(('-i', x) for x in tmp_outputs),
                    #'-i', 'concat:'+'|'.join(tmp_outputs),
