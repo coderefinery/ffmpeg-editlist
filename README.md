@@ -280,7 +280,8 @@ work as expected?)
     https://github.com/Kr4is/mpv-copy-time
   * `[` and `]` change the playback speed.  `O` causes time to be
     permanently shown.  `→` and `←` seek, `↑` and `↓` seek longer, and
-    `--hr-seek` allows seeking exactly.
+    `--hr-seek` allows seeking exactly.  `Control+→`, `Control+←`
+    allow seeking to the next/previous subtitle.
 
 
 ## Status / Contributing
