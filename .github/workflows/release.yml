@@ -67,7 +67,7 @@ jobs:
     # project version.
     - uses: rkdarst/action-verify-python-version@main
 
-    - uses: actions/upload-artifact@master
+    - uses: actions/upload-artifact@v4
       with:
         name: dist-directory
         path: dist/
@@ -81,7 +81,7 @@ jobs:
       id-token: write  # for trusted publishing
     steps:
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: dist-directory
         path: dist/
