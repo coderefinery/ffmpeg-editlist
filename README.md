@@ -212,7 +212,7 @@ This is a full example that demonstrates all features.
     - stop: 1:04:45
     #- 1:18:22: This will fail, timestamp after the end
 
-This syntax is used to cover a segment of the video:
+# This syntax is used to cover a segment of the video:
 - output: day3-has-audience-visible.mp4
   editlist:
   - start: 00:00
