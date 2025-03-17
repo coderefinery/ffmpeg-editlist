@@ -504,7 +504,7 @@ def main(argv=sys.argv[1:]):
                 subprocess.check_call(cmd)
 
             # Embed subtitles in mkv if they are there
-            if srt and args.mkv_props:
+            if args.srt and args.mkv_props:
                 cmd = ['mkvmerge', tmpdir_out, srt_output,
                        '-o', tmpdir_out+'.2.mkv',
                        ]
@@ -523,6 +523,7 @@ def main(argv=sys.argv[1:]):
             LOG.debug(pprint.pformat(TOC))
 
             video_description = [ ]
+            title = None
             if segment.get('title'):
                 title = segment['title']
                 if workshop_title is not None:
@@ -558,14 +559,15 @@ def main(argv=sys.argv[1:]):
                     open(toc_file, 'w').write('\n\n'.join(video_description))
 
             # mkv chapters
-            cmd = ['mkvpropedit', tmpdir_out,
-                   '--set', f'title={title}',
-                   *(['--chapters', str(chapter_file),] if toc else []),
-                   *(['--attachment-name', 'description', '--add-attachment', video_description_file] if video_description else []),
-                   ]
-            print(cmd)
-            if not args.check and args.mkv_props:
-                subprocess.check_call(cmd)
+            if title or toc or video_description:
+                cmd = ['mkvpropedit', tmpdir_out,
+                       *(['--set', f'title={title}',] if title else []),
+                       *(['--chapters', str(chapter_file),] if toc else []),
+                       *(['--attachment-name', 'description', '--add-attachment', video_description_file] if video_description else []),
+                       ]
+                print(cmd)
+                if not args.check and args.mkv_props:
+                    subprocess.check_call(cmd)
 
 
             # Finalize the video
