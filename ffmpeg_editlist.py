@@ -238,8 +238,8 @@ def main(argv=sys.argv[1:]):
                         help='Number of encoding threads.  Default: unset, autodetect')
     parser.add_argument('--wait', action='store_true',
                         help='Wait after each encoding (don\'t clean up the temporary directory right away')
-    parser.add_argument('--no-mkv-chapters', action='store_false', default=True, dest='mkv_chapters',
-                        help="Don't try to encode the chapters and description into the mkv file.  This requires mkvnixtools to be installed")
+    parser.add_argument('--no-mkv-props', action='store_false', default=True, dest='mkv_props',
+                        help="Don't try to encode extra properties into the mkv file.  This requires mkvnixtools to be installed")
     parser.add_argument('--list', action='store_true',
                         help="Don't do anything, just list all outputs that would be processed (and nothing else)")
 
@@ -471,6 +471,13 @@ def main(argv=sys.argv[1:]):
                 options_ffmpeg_segment = [ ]
                 segment_type = 'video'
 
+            output = args.output / segment['output']
+
+            # Subtitles
+            if args.srt:
+                srt_output = os.path.splitext(output)[0] + '.srt'
+                open(srt_output, 'w').write(srt.compose(subtitles))
+
             # Create the playlist of inputs
             playlist = Path(tmpdir) / 'playlist.txt'
             with open(playlist, 'w') as playlist_f:
@@ -479,7 +486,6 @@ def main(argv=sys.argv[1:]):
             LOG.debug("Playlist:")
             LOG.debug(open(playlist).read())
             # Re-encode
-            output = args.output / segment['output']
             ensure_filedir_exists(output)
             if output in all_inputs:
                 raise RuntimeError("Output is the same as an input file, aborting.")
@@ -496,6 +502,17 @@ def main(argv=sys.argv[1:]):
             LOG.info(shell_join(cmd))
             if not args.check:
                 subprocess.check_call(cmd)
+
+            # Embed subtitles in mkv if they are there
+            if srt and args.mkv_props:
+                cmd = ['mkvmerge', tmpdir_out, srt_output,
+                       '-o', tmpdir_out+'.2.mkv',
+                       ]
+                print(cmd)
+                if not args.check:
+                    subprocess.check_call(cmd)
+                    shutil.move(tmpdir_out+'.2.mkv', tmpdir_out)
+
 
             # Create the video properties/chapters/etc (needs to be done before
             # making the final mkv because it gets encoded into the mkv file).
@@ -547,7 +564,7 @@ def main(argv=sys.argv[1:]):
                    *(['--attachment-name', 'description', '--add-attachment', video_description_file] if video_description else []),
                    ]
             print(cmd)
-            if not args.check and args.mkv_chapters:
+            if not args.check and args.mkv_props:
                 subprocess.check_call(cmd)
 
 
@@ -559,12 +576,6 @@ def main(argv=sys.argv[1:]):
             if not args.check:
                 with atomic_write(output) as tmp_output:
                     shutil.move(tmpdir_out, tmp_output)
-
-            # Subtitles
-            if args.srt:
-                srt_output = os.path.splitext(output)[0] + '.srt'
-                open(srt_output, 'w').write(srt.compose(subtitles))
-
 
             # Print out covered segments (for verification purposes)
             for seg_n, time in covers:
