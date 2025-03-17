@@ -408,6 +408,10 @@ def main(argv=sys.argv[1:]):
                     input1 = args.input / input1
                     input1 = os.path.expanduser(input1)
                 all_inputs.add(input1)
+                if not os.path.exists(input1):
+                    print(f"ERROR: input not found: {input1}", file=sys.stderr)
+                    sys.exit(1)
+
 
                 segment_list.append([segment_number, seconds(start), cumulative_time])
                 segment_list.append([segment_number, seconds(stop), None])
@@ -452,6 +456,9 @@ def main(argv=sys.argv[1:]):
                 # Subtitles?
                 if args.srt:
                     sub_file = os.path.splitext(input1)[0] + '.srt'
+                    if not os.path.exists(sub_file):
+                        print(f'ERROR: subtitle file not found: {sub_file}', file=sys.stderr)
+                        sys.exit(1)
                     start_dt = timedelta(seconds=seconds(start))
                     end_dt   = timedelta(seconds=seconds(stop))
                     start_cumulative_dt = timedelta(seconds=start_cumulative)
