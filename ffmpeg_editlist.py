@@ -239,7 +239,7 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('--wait', action='store_true',
                         help='Wait after each encoding (don\'t clean up the temporary directory right away')
     parser.add_argument('--no-mkv-props', action='store_false', default=True, dest='mkv_props',
-                        help="Don't try to encode extra properties into the mkv file.  This requires mkvnixtools to be installed")
+                        help="Don't try to encode extra properties into the mkv file.  This requires mkvtoolnix to be installed")
     parser.add_argument('--list', action='store_true',
                         help="Don't do anything, just list all outputs that would be processed (and nothing else)")
 

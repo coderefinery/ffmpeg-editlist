@@ -47,6 +47,9 @@ It depends on the `ffmpeg` command line utility, which must be
 installed through the operating system.  Version requirements of
 `ffmpeg` are currently unknown.
 
+The mkv file properties (title, description, chapters, subtitles)
+require mkvtoolnix to be installed.  This is used by default, but the
+option `--no-mkv-props` will disable this.
 
 
 ## Usage
