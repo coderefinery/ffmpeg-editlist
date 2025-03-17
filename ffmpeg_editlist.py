@@ -124,11 +124,11 @@ def test_seconds():
     assert seconds('1:30') == 90
     assert seconds('1:1:30') == 3690
     assert seconds('1:1:30.5') == 3690.5
-def humantime(x):
+def humantime(x, show_hour=False):
     hou = x // 3600
     min = (x % 3600) // 60
     sec = x % 60
-    if hou:
+    if hou or show_hour:
         return "%d:%02d:%02d"%(hou, min, floor(sec))
     return "%02d:%02d"%(min, floor(sec))
 def test_humantime():
@@ -238,6 +238,8 @@ def main(argv=sys.argv[1:]):
                         help='Number of encoding threads.  Default: unset, autodetect')
     parser.add_argument('--wait', action='store_true',
                         help='Wait after each encoding (don\'t clean up the temporary directory right away')
+    parser.add_argument('--no-mkv-chapters', action='store_false', default=True, dest='mkv_chapters',
+                        help="Don't try to encode the chapters and description into the mkv file.  This requires mkvnixtools to be installed")
     parser.add_argument('--list', action='store_true',
                         help="Don't do anything, just list all outputs that would be processed (and nothing else)")
 
@@ -494,21 +496,14 @@ def main(argv=sys.argv[1:]):
             LOG.info(shell_join(cmd))
             if not args.check:
                 subprocess.check_call(cmd)
-            # We need another copy, since ffmpeg detects output based on filename.  Yet for atomicness, we need a temporary filename for the temp part
-            if not args.check:
-                with atomic_write(output) as tmp_output:
-                    shutil.move(tmpdir_out, tmp_output)
 
-            # Subtitles
-            if args.srt:
-                srt_output = os.path.splitext(output)[0] + '.srt'
-                open(srt_output, 'w').write(srt.compose(subtitles))
+            # Create the video properties/chapters/etc (needs to be done before
+            # making the final mkv because it gets encoded into the mkv file).
 
             # Print table of contents
             import pprint
             LOG.debug(pprint.pformat(segment_list))
             LOG.debug(pprint.pformat(TOC))
-
 
             video_description = [ ]
             if segment.get('title'):
@@ -521,12 +516,18 @@ def main(argv=sys.argv[1:]):
                 video_description.extend([segment['description'].strip().replace('\n', '\n\n')])
             # Print out the table of contents
             #video_description.append('\n')
+            # Making chapters
             toc = [ ]
-            for seg_n, time, name in TOC:
+            chapter_file = Path(tmpdir) / 'chapters.txt'
+            chapter_file_f = open(chapter_file, 'w')
+            for i, (seg_n, time, name) in enumerate(TOC):
                 LOG.debug("TOC entry %s %s", time, name)
                 new_time = map_time(seg_n, segment_list, time)
                 print(humantime(new_time), name)
                 toc.append(f"{humantime(new_time)} {name}")
+                chapter_file_f.write(f'CHAPTER{i+1:02d}={humantime(new_time, show_hour=True)}.000\n')
+                chapter_file_f.write(f'CHAPTER{i+1:02d}NAME={name}\n')
+            chapter_file_f.close()
             if toc:
                 video_description.append('\n'.join(toc))
 
@@ -535,8 +536,35 @@ def main(argv=sys.argv[1:]):
                 video_description.append(workshop_description.replace('\n', '\n\n').strip())
 
             if video_description:
-                with atomic_write(os.path.splitext(str(output))[0]+'.info.txt', 'w') as toc_file:
+                video_description_file = os.path.splitext(str(output))[0]+'.info.txt'
+                with atomic_write(video_description_file, 'w') as toc_file:
                     open(toc_file, 'w').write('\n\n'.join(video_description))
+
+            # mkv chapters
+            cmd = ['mkvpropedit', tmpdir_out,
+                   '--set', f'title={title}',
+                   *(['--chapters', str(chapter_file),] if toc else []),
+                   *(['--attachment-name', 'description', '--add-attachment', video_description_file] if video_description else []),
+                   ]
+            print(cmd)
+            if not args.check and args.mkv_chapters:
+                subprocess.check_call(cmd)
+
+
+            # Finalize the video
+
+            # We need another copy, since ffmpeg detects output based on
+            # filename.  Yet for atomicness, we need a temporary filename for
+            # the temp part
+            if not args.check:
+                with atomic_write(output) as tmp_output:
+                    shutil.move(tmpdir_out, tmp_output)
+
+            # Subtitles
+            if args.srt:
+                srt_output = os.path.splitext(output)[0] + '.srt'
+                open(srt_output, 'w').write(srt.compose(subtitles))
+
 
             # Print out covered segments (for verification purposes)
             for seg_n, time in covers:
