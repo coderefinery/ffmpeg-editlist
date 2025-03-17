@@ -40,6 +40,41 @@ usage = """\
 
 """
 
+template_single = """\
+- input: INPUT.mkv
+
+- output: OUTPUT.mkv
+  title: TITLE
+  description: >-
+    MULTI-LINE
+    DESCRIPTION
+  editlist:
+    - start: 00:00   # These are time segments to include
+    - 4:00: Begin exercise 1
+    - stop: 5:00
+"""
+
+template_workshop = """\
+- workshop_title: TITLE APPENDED TO VIDEO TITLES
+
+- workshop_description: >
+    MULTI LINE DESCRIPTION
+    THAT GETS APPENDED
+    TO EACH VIDEO'S DESCRIPTION
+
+- input: INPUT.mkv
+
+- output: OUTPUT.mkv
+  title: TITLE
+  description: >-
+    MULTI-LINE
+    DESCRIPTION
+  editlist:
+    - start: 00:00   # These are time segments to include
+    - 4:00: Begin exercise 1
+    - stop: 5:00
+"""
+
 FFMPEG_VIDEO_COPY = ['-vcodec', 'copy',]
 FFMPEG_VIDEO_ENCODE = ['-c:v', 'libx264', ] #'-preset', 'slow', '-crf', '22'
 FFMPEG_AUDIO_COPY = ['-acodec', 'copy',]
@@ -205,7 +240,20 @@ def main(argv=sys.argv[1:]):
                         help='Wait after each encoding (don\'t clean up the temporary directory right away')
     parser.add_argument('--list', action='store_true',
                         help="Don't do anything, just list all outputs that would be processed (and nothing else)")
+
+    parser.add_argument('--template-single', action='store_true',
+                        help="Print out template for a single video, don't do anything else.")
+    parser.add_argument('--template-workshop', action='store_true',
+                        help="Print out template for a workshop, don't do anything else.")
     args = parser.parse_args(argv)
+
+    # Printing out templates
+    if args.template_single:
+        print(template_single)
+        sys.exit(0)
+    if args.template_workshop:
+        print(template_workshop)
+        sys.exit(0)
 
     if args.threads:
         FFMPEG_VIDEO_ENCODE.extend(['-threads', str(args.threads)])
