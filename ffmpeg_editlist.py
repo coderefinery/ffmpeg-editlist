@@ -9,6 +9,7 @@ import argparse
 import bisect
 import contextlib
 import copy
+import datetime
 from datetime import timedelta
 import itertools
 import logging
@@ -215,8 +216,12 @@ def main(argv=sys.argv[1:]):
                         help="Don't encode or generate output files, just check consistency of the YAML file.  This *will* override the .info.txt output file.")
     parser.add_argument('--force', '-f', action='store_true',
                         help='Overwrite existing output files without prompting')
+    parser.add_argument('--dry-run', action='store_true',
+                        help="Dry run, don't make any new files or changes (command not fully developed yet)")
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Verbose (put ffmpeg in normal mode, otherwise ffmpeg is quiet.)')
+    parser.add_argument('--quiet', '-q', action='store_true',
+                        help="Don't output as much")
 
     parser.add_argument('--reencode', action='store_true',
                         help='Re-encode all segments of the video.  See --preset and --crf to adjust parameters.'
@@ -242,7 +247,8 @@ def main(argv=sys.argv[1:]):
                         help="Don't try to encode extra properties into the mkv file.  This requires mkvtoolnix to be installed")
     parser.add_argument('--list', action='store_true',
                         help="Don't do anything, just list all outputs that would be processed (and nothing else)")
-
+    parser.add_argument('--show-schedule',
+                        help="Translate timestamps to real schedule time.  EDITLIST_TIMESTAMP=SCHEDULED_TIME.")
     parser.add_argument('--template-single', action='store_true',
                         help="Print out template for a single video, don't do anything else.")
     parser.add_argument('--template-workshop', action='store_true',
@@ -281,11 +287,17 @@ def main(argv=sys.argv[1:]):
         #print(data)
     data = yaml.safe_load(data)
 
+    if args.show_schedule:
+        schedule_start = seconds(args.show_schedule.split('=')[0])
+        schedule_ts = seconds(args.show_schedule.split('=')[1])
+        schedule_delta = schedule_ts - schedule_start
 
     PWD = Path(os.getcwd())
     LOGLEVEL = 31
     if args.verbose:
         LOGLEVEL = 40
+    if args.quiet:
+        LOG.setLevel(40)
     workshop_title = None
     workshop_description = None
     options_ffmpeg_global = [ ]
@@ -340,6 +352,14 @@ def main(argv=sys.argv[1:]):
             segment_type = 'video'
             segment_number = 0
             for i, command in enumerate(editlist):
+                # Backwards compatibility with old 'begin' and 'end' commands
+                if 'begin' in command:
+                    command['start'] = command['begin']
+                    del command['begin']
+                if 'end' in command:
+                    command['stop'] = command['end']
+                    del command['end']
+                #
 
                 # Is this a command to cover a part of the video?
                 if isinstance(command, dict) and 'cover' in command:
@@ -360,19 +380,19 @@ def main(argv=sys.argv[1:]):
                         continue
                 # Start command: start a segment
                 elif isinstance(command, dict) and 'start' in command:
-                    segment_number += 1
                     start = command['start']
-                    continue
-                elif isinstance(command, dict) and 'begin' in command:
+                    if args.show_schedule:
+                        if segment_number == 0:
+                            print(f"{humantime(seconds(start) + schedule_delta)} START **{segment['title']}**")
+                        else:
+                            print(f"{humantime(seconds(start) + schedule_delta)} START")
                     segment_number += 1
-                    start = command['begin']
                     continue
                 # End command: process this segment and all queued commands
                 elif isinstance(command, dict) and 'stop' in command:
                     stop = command['stop']
-                    # Continue below to process this segment
-                elif isinstance(command, dict) and 'end' in command:
-                    stop = command['end']
+                    if args.show_schedule:
+                        print(f"{humantime(seconds(stop) + schedule_delta)} STOP")
                     # Continue below to process this segment
                 # Is this a TOC entry?
                 # If it's a dict, it is a table of contents entry that will be
@@ -388,6 +408,11 @@ def main(argv=sys.argv[1:]):
                     #print(start, title)
                     #print('TOC', start, title, segment)
                     TOC.append((segment_number, seconds(time), title))
+                    if args.show_schedule:
+                        if title.startswith('§'):
+                            print(f"{humantime(seconds(time) + schedule_delta)} . **{title}**")
+                        else:
+                            print(f"{humantime(seconds(time) + schedule_delta)} .. {title}")
                     continue
 
 
@@ -407,6 +432,10 @@ def main(argv=sys.argv[1:]):
 
                 # Print status
                 LOG.info("\n\nBeginning %s (line %d)", segment.get('title') if 'title' in segment else '[no title]', i)
+
+                # TODO: should continue further down to actually test other code.
+                if args.dry_run:
+                    continue
 
                 # Find input file
                 if not os.path.exists(input1):
@@ -484,6 +513,10 @@ def main(argv=sys.argv[1:]):
                 segment_type = 'video'
 
             output = args.output / segment['output']
+
+            # TODO: should continue further down to actually test other code.
+            if args.dry_run:
+                continue
 
             # Subtitles
             if args.srt:
