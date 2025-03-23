@@ -247,6 +247,8 @@ def main(argv=sys.argv[1:]):
                         help="Print out template for a single video, don't do anything else.")
     parser.add_argument('--template-workshop', action='store_true',
                         help="Print out template for a workshop, don't do anything else.")
+    parser.add_argument('--literal-editlist', action='store_true',
+                        help="Instead of the editlist argument being a file, it is literal YAML to be parsed.")
     args = parser.parse_args(argv)
 
     # Printing out templates
@@ -268,7 +270,10 @@ def main(argv=sys.argv[1:]):
     all_inputs = set()
 
     # Open the input file.  Parse out of markdown if it is markdown:
-    data = open(args.editlist).read()
+    if args.literal_editlist:
+        data = args.editlist
+    else:
+        data = open(args.editlist).read()
     if '```' in data:
         matches = re.findall(r'`{3,}[^\n]*\n(.*?)\n`{3,}', data, re.MULTILINE|re.DOTALL)
         #print(matches)
