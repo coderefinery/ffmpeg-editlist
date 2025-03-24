@@ -199,6 +199,32 @@ def shell_join(x):
     return ' '.join(shlex.quote(str(_)) for _ in x)
 
 
+class SchedulePrinter:
+    """Prints schedule lines (remembering to print the duration)
+    """
+    def __init__(self, enabled, scheduletime=None, realtime=None):
+        self.enabled = enabled
+        self.lasttime = None
+        self.lasttitle = None
+        if scheduletime:
+            self.sync(scheduletime, realtime)
+    def sync(self, scheduletime, realtime):
+        self.delta = seconds(realtime) - seconds(scheduletime)
+    def __call__(self, time, title):
+        self._emit(seconds(time))
+        self.lasttime = seconds(time)
+        self.lasttitle = title
+    def _emit(self, time=None):
+        if self.lasttitle:
+            delta = "         "
+            if time is not None:
+                delta = f" ({round((time - self.lasttime)/60):>2d} min)"
+            if self.enabled:
+                print(f"{humantime(seconds(self.lasttime) + self.delta):>8s}{delta} {self.lasttitle}")
+    def __del__(self):
+        self._emit()
+
+
 
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
@@ -247,8 +273,8 @@ def main(argv=sys.argv[1:]):
                         help="Don't try to encode extra properties into the mkv file.  This requires mkvtoolnix to be installed")
     parser.add_argument('--list', action='store_true',
                         help="Don't do anything, just list all outputs that would be processed (and nothing else)")
-    parser.add_argument('--show-schedule',
-                        help="Translate timestamps to real schedule time.  EDITLIST_TIMESTAMP=SCHEDULED_TIME.")
+    parser.add_argument('--show-schedule', action='store_true',
+                        help="Translate timestamps to real schedule time.  Have a '- schedule-sync: 00:15:25=9:00:00' at the top level of the editlist file after each input.")
     parser.add_argument('--template-single', action='store_true',
                         help="Print out template for a single video, don't do anything else.")
     parser.add_argument('--template-workshop', action='store_true',
@@ -287,10 +313,7 @@ def main(argv=sys.argv[1:]):
         #print(data)
     data = yaml.safe_load(data)
 
-    if args.show_schedule:
-        schedule_start = seconds(args.show_schedule.split('=')[0])
-        schedule_ts = seconds(args.show_schedule.split('=')[1])
-        schedule_delta = schedule_ts - schedule_start
+    schedule = SchedulePrinter(args.show_schedule)
 
     PWD = Path(os.getcwd())
     LOGLEVEL = 31
@@ -329,6 +352,9 @@ def main(argv=sys.argv[1:]):
             if 'crop' in segment:
                 # -filter:v "crop=w:h:x:y"    - x:y is top-left corner
                 options_ffmpeg_output.extend(generate_crop(**segment['crop']))
+            if 'schedule-sync' in segment:
+                schedule.sync(*segment['schedule-sync'].split('='))
+
 
 
             if 'output' not in segment:
@@ -381,18 +407,13 @@ def main(argv=sys.argv[1:]):
                 # Start command: start a segment
                 elif isinstance(command, dict) and 'start' in command:
                     start = command['start']
-                    if args.show_schedule:
-                        if segment_number == 0:
-                            print(f"{humantime(seconds(start) + schedule_delta)} START **{segment['title']}**")
-                        else:
-                            print(f"{humantime(seconds(start) + schedule_delta)} START")
+                    schedule(start, f"START" + (f" **{segment['title']}**" if segment_number == 0 else " "))
                     segment_number += 1
                     continue
                 # End command: process this segment and all queued commands
                 elif isinstance(command, dict) and 'stop' in command:
                     stop = command['stop']
-                    if args.show_schedule:
-                        print(f"{humantime(seconds(stop) + schedule_delta)} STOP")
+                    schedule(stop, "STOP")
                     # Continue below to process this segment
                 # Is this a TOC entry?
                 # If it's a dict, it is a table of contents entry that will be
@@ -408,11 +429,11 @@ def main(argv=sys.argv[1:]):
                     #print(start, title)
                     #print('TOC', start, title, segment)
                     TOC.append((segment_number, seconds(time), title))
-                    if args.show_schedule:
-                        if title.startswith('§'):
-                            print(f"{humantime(seconds(time) + schedule_delta)} . **{title}**")
-                        else:
-                            print(f"{humantime(seconds(time) + schedule_delta)} .. {title}")
+
+                    if title.startswith('§'):
+                        schedule(time, f'. **{title}**')
+                    else:
+                        schedule(time, f'. . {title}')
                     continue
 
 

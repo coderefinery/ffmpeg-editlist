@@ -167,6 +167,7 @@ This is a full example that demonstrates all features.
 # Input relative to the input-dir command line argument.
 # If not given, use the raw input-dir argument as a filename.
 - input: cr-2021may-day1-obs.mov
+- schedule-sync: 00:12:20=9:00:00
 
 # A basic example
 # Output is relative to the output-dir command line argument.
