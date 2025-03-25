@@ -125,10 +125,13 @@ def test_seconds():
     assert seconds('1:30') == 90
     assert seconds('1:1:30') == 3690
     assert seconds('1:1:30.5') == 3690.5
-def humantime(x, show_hour=False):
+def humantime(x, show_hour=False, show_second=True):
     hou = x // 3600
     min = (x % 3600) // 60
     sec = x % 60
+    if not show_second:
+        sec = round(sec/60)*60
+        return "%d:%02d"%(hou, min)
     if hou or show_hour:
         return "%d:%02d:%02d"%(hou, min, floor(sec))
     return "%02d:%02d"%(min, floor(sec))
@@ -224,7 +227,7 @@ class SchedulePrinter:
             if time is not None:
                 delta = f" ({round((time - self.lasttime)/60):>2d} min)"
             if self.enabled:
-                print(f"{humantime(seconds(self.lasttime) + self.delta):>8s}{delta} {self.lasttitle}")
+                print(f"{humantime(seconds(self.lasttime) + self.delta, show_second=False):>5s}{delta} {self.lasttitle}")
     def __del__(self):
         self._emit()
 
