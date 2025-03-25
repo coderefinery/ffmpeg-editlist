@@ -389,9 +389,13 @@ def main(argv=sys.argv[1:]):
                 if 'begin' in command:
                     command['start'] = command['begin']
                     del command['begin']
-                if 'end' in command:
-                    command['stop'] = command['end']
-                    del command['end']
+                for stop_alias in ['end', 'break', 'lunch', 'exercise']:
+                    if stop_alias in command:
+                        command['stop'] = command[stop_alias]
+                        del command[stop_alias]
+                        break
+                else:
+                    stop_alias = 'stop'
                 #
 
                 # Is this a command to cover a part of the video?
@@ -420,7 +424,7 @@ def main(argv=sys.argv[1:]):
                 # End command: process this segment and all queued commands
                 elif isinstance(command, dict) and 'stop' in command:
                     stop = command['stop']
-                    schedule(stop, "STOP")
+                    schedule(stop, stop_alias.upper())
                     # Continue below to process this segment
                 # Is this a TOC entry?
                 # If it's a dict, it is a table of contents entry that will be
