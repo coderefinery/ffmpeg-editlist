@@ -211,9 +211,13 @@ class SchedulePrinter:
     def sync(self, scheduletime, realtime):
         self.delta = seconds(realtime) - seconds(scheduletime)
     def __call__(self, time, title):
-        self._emit(seconds(time))
-        self.lasttime = seconds(time)
-        self.lasttitle = title
+        if self.lasttitle == 'START' and seconds(time) == self.lasttime:
+            # don't emit line right if we have a section right after this.
+            self.lasttitle = title
+        else:
+            self._emit(seconds(time))
+            self.lasttime = seconds(time)
+            self.lasttitle = title
     def _emit(self, time=None):
         if self.lasttitle:
             delta = "         "
@@ -407,7 +411,7 @@ def main(argv=sys.argv[1:]):
                 # Start command: start a segment
                 elif isinstance(command, dict) and 'start' in command:
                     start = command['start']
-                    schedule(start, f"START" + (f" **{segment['title']}**" if segment_number == 0 else " "))
+                    schedule(start, f"START" + (f" **{segment['title']}**" if segment_number == 0 else ""))
                     segment_number += 1
                     continue
                 # End command: process this segment and all queued commands
