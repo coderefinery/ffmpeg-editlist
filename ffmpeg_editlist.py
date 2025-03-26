@@ -246,7 +246,7 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('--limit', '-l', action='append',
                         help='Limit to only outputs matching this pattern.  There is no wildcarding.  This option can be given multiple times.')
     parser.add_argument('--check', '-c', action='store_true',
-                        help="Don't encode or generate output files, just check consistency of the YAML file.  This *will* override the .info.txt output file.")
+                        help="Don't encode or generate output files, just check consistency of the YAML file.  This *will* override the .info.txt output file.  If the temporary encoded intermediate file exists, DO update the final .mkv file with subtitles/descriptions/etc.")
     parser.add_argument('--force', '-f', action='store_true',
                         help='Overwrite existing output files without prompting')
     parser.add_argument('--dry-run', action='store_true',
@@ -544,6 +544,8 @@ def main(argv=sys.argv[1:]):
                 options_ffmpeg_segment = [ ]
                 segment_type = 'video'
 
+            output_raw = args.output / segment['output']
+            output_raw = output_raw.parent / 'tmp' / output_raw.name
             output = args.output / segment['output']
 
             # TODO: should continue further down to actually test other code.
@@ -580,15 +582,14 @@ def main(argv=sys.argv[1:]):
             if not args.check:
                 subprocess.check_call(cmd)
 
-            # Embed subtitles in mkv if they are there
-            if args.srt and args.mkv_props:
-                cmd = ['mkvmerge', tmpdir_out, srt_output,
-                       '-o', tmpdir_out+'.2.mkv',
-                       ]
-                print(cmd)
-                if not args.check:
-                    subprocess.check_call(cmd)
-                    shutil.move(tmpdir_out+'.2.mkv', tmpdir_out)
+            # This is raw encoding without subtitles or anithing
+            # We need another copy, since ffmpeg detects output based on
+            # filename.  Yet for atomicness, we need a temporary filename for
+            # the temp part
+            if not args.check:
+                ensure_filedir_exists(output_raw)
+                with atomic_write(output_raw) as tmp_output:
+                    shutil.move(tmpdir_out, tmp_output)
 
 
             # Create the video properties/chapters/etc (needs to be done before
@@ -635,26 +636,36 @@ def main(argv=sys.argv[1:]):
                 with atomic_write(video_description_file, 'w') as toc_file:
                     open(toc_file, 'w').write('\n\n'.join(video_description))
 
-            # mkv chapters
-            if title or toc or video_description:
-                cmd = ['mkvpropedit', tmpdir_out,
-                       *(['--set', f'title={title}',] if title else []),
-                       *(['--chapters', str(chapter_file),] if toc else []),
-                       *(['--attachment-name', 'description', '--add-attachment', video_description_file] if video_description else []),
-                       ]
-                print(cmd)
-                if not args.check and args.mkv_props:
-                    subprocess.check_call(cmd)
-
-
             # Finalize the video
 
-            # We need another copy, since ffmpeg detects output based on
-            # filename.  Yet for atomicness, we need a temporary filename for
-            # the temp part
-            if not args.check:
-                with atomic_write(output) as tmp_output:
-                    shutil.move(tmpdir_out, tmp_output)
+            # Embed subtitles in mkv if they are there
+            if args.srt and args.mkv_props:
+                cmd_merge = ['mkvmerge', output_raw, srt_output,
+                       '-o', output,
+                       ]
+                print(cmd_merge)
+                if (not args.check) or output_raw.exists():
+                    subprocess.check_call(cmd_merge)
+                    #shutil.move(tmpdir_out, output)
+            else:
+                if not args.check:
+                    shutil.copy(output_raw, output)
+
+
+            # mkv chapters
+            if title or toc or video_description:
+                cmd_propedit = [
+                    'mkvpropedit', output,
+                    *(['--set', f'title={title}',] if title else []),
+                    *(['--chapters', str(chapter_file),] if toc else []),
+                    *(['--attachment-name', 'description', '--add-attachment', video_description_file] if video_description else []),
+                    ]
+                print(cmd_propedit)
+                if (not args.check) or output_raw.exists():
+                    subprocess.check_call(cmd_propedit)
+
+
+
 
             # Print out covered segments (for verification purposes)
             for seg_n, time in covers:
