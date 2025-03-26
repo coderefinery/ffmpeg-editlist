@@ -30,6 +30,8 @@ Features include:
   appears).
 * Everything scripted and non-interactive.
 * Cutting and re-splicing subtitles, too.
+* Embed subtitles, title, chapters, and description inside the final
+  .mkv file.
 
 
 
@@ -50,6 +52,7 @@ installed through the operating system.  Version requirements of
 The mkv file properties (title, description, chapters, subtitles)
 require mkvtoolnix to be installed.  This is used by default, but the
 option `--no-mkv-props` will disable this.
+
 
 
 ## Usage
@@ -108,6 +111,11 @@ similarly placed alongside each output.  Warning: make sure that no
 segment's declared stop time goes beyond the actual file length.  It's
 possible that there will be some weird effects around the
 beginning/end of the segments if subtitles go beyond the start/stop.
+
+Show realtime schedule:  A `- schedule-sync: SCHEDULETIME=REALTIME`
+entry in the yaml file will allow `--show-schedule --dry-run -cq [-l
+day2]` to print the timings, translated to a real-time schedule
+suitable as reference for future years.
 
 
 
