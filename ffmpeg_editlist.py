@@ -418,7 +418,7 @@ def main(argv=sys.argv[1:]):
                 # Start command: start a segment
                 elif isinstance(command, dict) and 'start' in command:
                     start = command['start']
-                    schedule(start, f"START" + (f" **{segment['title']}**" if segment_number == 0 else ""))
+                    schedule(start, f"START" + (f" **{segment['title']}**" if segment_number and 'title' in segment == 0 else ""))
                     segment_number += 1
                     continue
                 # End command: process this segment and all queued commands
