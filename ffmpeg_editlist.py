@@ -619,7 +619,8 @@ def main(argv=sys.argv[1:]):
             for i, (seg_n, time, name) in enumerate(TOC):
                 LOG.debug("TOC entry %s %s", time, name)
                 new_time = map_time(seg_n, segment_list, time)
-                print(humantime(new_time), name)
+                if not args.quiet:
+                    print(humantime(new_time), name)
                 toc.append(f"{humantime(new_time)} {name}")
                 chapter_file_f.write(f'CHAPTER{i+1:02d}={humantime(new_time, show_hour=True)}.000\n')
                 chapter_file_f.write(f'CHAPTER{i+1:02d}NAME={name}\n')
@@ -643,7 +644,7 @@ def main(argv=sys.argv[1:]):
                 cmd_merge = ['mkvmerge', output_raw, srt_output,
                        '-o', output,
                        ]
-                print(cmd_merge)
+                LOG.info(shell_join(cmd_merge))
                 if (not args.check) or output_raw.exists():
                     subprocess.check_call(cmd_merge)
                     #shutil.move(tmpdir_out, output)
@@ -660,7 +661,7 @@ def main(argv=sys.argv[1:]):
                     *(['--chapters', str(chapter_file),] if toc else []),
                     *(['--attachment-name', 'description', '--add-attachment', video_description_file] if video_description else []),
                     ]
-                print(cmd_propedit)
+                LOG.info(shell_join(cmd_propedit))
                 if (not args.check) or output_raw.exists():
                     subprocess.check_call(cmd_propedit)
 
