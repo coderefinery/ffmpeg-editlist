@@ -303,6 +303,11 @@ def main(argv=sys.argv[1:]):
     FFMPEG_VIDEO_ENCODE.extend(['-preset', args.preset])
     FFMPEG_VIDEO_ENCODE.extend(['-crf', str(args.crf)])
 
+    if args.show_schedule:
+        args.dry_run = True
+        args.quiet = True
+        args.check = True
+
     if args.srt:
         import srt
 
