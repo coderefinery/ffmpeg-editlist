@@ -521,7 +521,7 @@ def main(argv=sys.argv[1:]):
                        tmp_out,
                        ]
                 LOG.info(shell_join(cmd))
-                if not args.check:
+                if not (args.check or args.dry_run):
                     subprocess.check_call(cmd)
 
                 # Subtitles?
