@@ -446,7 +446,7 @@ def main(argv=sys.argv[1:]):
                     #print('TOC', start, title, segment)
                     TOC.append((segment_number, seconds(time), title))
 
-                    if title.startswith('§'):
+                    if '§' in title:
                         schedule(time, f'. **{title}**')
                     else:
                         schedule(time, f'. . {title}')
