@@ -52,7 +52,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install .[test,srt]
         pip install flit twine wheel
-        sudo apt install ffmpeg
+        sudo apt install ffmpeg mkvtoolnix
 
     - name: Test
       run: |
